@@ -9,7 +9,7 @@ def parse(s):
         
     "f(a, b, c, d) = (a + b(c + d))(bc)...."etc.
 
-    "f" can be any name. The variables can be anything as long as they do not contain brackets or spaces. 
+    "f" can be any name. The variables can be anything, but brackets, spaces, and dots will be removed. 
     Variables must be separated by commas, and the list of variables must be enclosed 
     by brackets (as in the example above). The expression must contain an equal ("=") sign.
     """
