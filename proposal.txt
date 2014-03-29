@@ -25,19 +25,19 @@ EXPECTED FUNCTIONALITY:
 
 MILESTONES:
 
-1. Writing tools and functions to deal with the math concerning Boolean functions. 
+1. Writing tools and functions to deal with the math concerning Boolean functions. Deadline: Thursday, April 3
 
 2. Text parsing for user input. If a user types in a function, our program will parse the string
-and convert it into a Boolean function that can be manipulated the code written in milestone 1.
+and convert it into a Boolean function that can be manipulated the code written in milestone 1. Deadline: Thursday, April 3
 
 3. Designing the GUI that users will interact with. It will have buttons and tools to 
-manipulate Boolean functions.
+manipulate Boolean functions. Saturday Night, April 5
 
 4. Adding drawing capabilities to the program. After a user types in a function, the GUI will 
-display the simplified form and an appropriate circuit diagram. 
+display the simplified form and an appropriate circuit diagram. Sunday night, April 6
 
 5. If time permits, we will add a command-line interface that will provide all of the functionalities
-of the GUI. (Comparable to the Octave command line).
+of the GUI. (Comparable to the Octave command line). Monday night, April 7
 
 6. If time permits, the user will be able to draw a ciruit in the GUI using built-in gates,
 and our program will output the corresponding Boolean function.
