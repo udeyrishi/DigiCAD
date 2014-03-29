@@ -1,0 +1,52 @@
+CMPUT 275 PROJECT PROPOSAL
+
+Project Title: Digital Logic Calculator and/or Drawing Program
+Project Team:  Raghav Vamaraju & Udey Rishi
+
+
+DESCRIPTION:
+
+We plan to create a program that can both simplify and draw (using AND/OR gates, etc.) Boolean functions (BF).
+Our program will integrate all of the skills taught in ECE 210 at UofA. This includes simplifying Boolean functions,
+interconversions into different forms for each function (for example, POS and SOP forms), and drawing the corresponding
+circuit diagram for each function. We will use a GUI for user input.
+
+
+
+EXPECTED FUNCTIONALITY:
+
+-Write BFs in simplest form (single variable case)
+-Convert BFs into POS and SOP form
+-Draw truth tables for BFs
+-Write BFs in simplest form (either in terms of # of gates used, or # terms)
+-Draw any of the above mentioned functions using digital logic gates
+
+
+
+MILESTONES:
+
+1. Writing tools and functions to deal with the math concerning Boolean functions. 
+
+2. Text parsing for user input. If a user types in a function, our program will parse the string
+and convert it into a Boolean function that can be manipulated the code written in milestone 1.
+
+3. Designing the GUI that users will interact with. It will have buttons and tools to 
+manipulate Boolean functions.
+
+4. Adding drawing capabilities to the program. After a user types in a function, the GUI will 
+display the simplified form and an appropriate circuit diagram. 
+
+5. If time permits, we will add a command-line interface that will provide all of the functionalities
+of the GUI. (Comparable to the Octave command line).
+
+6. If time permits, the user will be able to draw a ciruit in the GUI using built-in gates,
+and our program will output the corresponding Boolean function.
+
+
+
+DEMONSTRATION:
+
+In our demonstration, we will input ANY Boolean function into the GUI, and our program will simplify it, 
+manipulate it/convert it to different forms, and draw it. If we reach milestone 5, we will also
+demonstrate the command-line version of our program (same functionality as the GUI).
+
