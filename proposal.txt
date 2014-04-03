@@ -29,6 +29,8 @@ MILESTONES:
 
 2. Text parsing for user input. If a user types in a function, our program will parse the string
 and convert it into a Boolean function that can be manipulated the code written in milestone 1. Deadline: Thursday, April 3
+....done
+
 
 3. Designing the GUI that users will interact with. It will have buttons and tools to 
 manipulate Boolean functions. Saturday Night, April 5

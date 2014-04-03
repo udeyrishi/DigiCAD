@@ -50,7 +50,7 @@ def make_table(expression):
         # Determine the truth value of the function and store it.    
         truth_table[binary_num] = eval(f_temp) > 0
         
-    return truth_table
+    return vars, truth_table
         
         
         
