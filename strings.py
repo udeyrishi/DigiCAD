@@ -7,7 +7,7 @@ def parse(s):
 
     Expressions are expected to be in the form:
         
-    "f(a, b, c, d) = (a + b*(c + d))(b*c)...."etc.
+    "f(a, b, c, d) = (a + ~b*(c + d))*(b^c)...."etc.
 
     "f" can be any name. The variables names can be anything, but brackets, spaces, dots, *, 
     /, \, ^, and + symbols will be removed. Variables must be separated by commas, and cannot contain 
@@ -15,6 +15,7 @@ def parse(s):
     above). The expression must contain an equal ("=") sign.
     
     '+' symbols are used for 'OR'. '*' symbols are used for AND. '^' symbols are used for 'XOR'.
+    '~' symbols are used for 'NOT'.
     """
     
     position = -1
