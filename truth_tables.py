@@ -1,4 +1,4 @@
-from strings import parse
+from strings import *
 
 def make_table(expression):
     """
@@ -65,7 +65,7 @@ def make_table(expression):
         # Determine the truth value of the function and store it.    
         truth_table[binary_num] = bool(eval(f_temp))
         
-    return truth_table
+    return vars, truth_table
         
         
         

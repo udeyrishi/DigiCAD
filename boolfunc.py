@@ -9,15 +9,22 @@ matrix form).
 from truth_tables import *
 import copy
 
-class InvalidKmapError(Exception):
+class InvalidBooleanFunctionError(Exception):
     pass
 
-class BoolFunc:
+class BF:
     """
     Creates a boolean function 
     """
 
-    def __init__(self, function, dc=None):
+    def __init__(self, function, name = 'f', dc=None):
+
+        # This name is useless if the function is in proper form
+        # If not in proper form, this name will be applied
+        function = proper(function, name)
+
+        # After appropriate name is set up, store this name as an attribute
+        self._name = find_name(function)
 
         # Parsing out the list of variables in the expression and creating the
         # truth table
@@ -29,14 +36,14 @@ class BoolFunc:
         # Testing consistency of # of expressions
         okay = test_vals(minterms)
         if not okay: 
-            raise InvalidKmapError("Inconsistent number of expressions")
+            raise InvalidBooleanFunctionError("Inconsistent number of expressions")
 
         okay = test_vals(maxterms)
         if not okay:
-            raise InvalidKmapError("Inconsistent number of expressions")
+            raise InvalidBooleanFunctionError("Inconsistent number of expressions")
 
         if len(variables) != len(minterms[0]):
-            raise InvalidKmapError("Inconsistent number of expressions")
+            raise InvalidBooleanFunctionError("Inconsistent number of expressions")
         
         # Everything is good so store the vars, TT and the expression
         self._expression = function
@@ -46,17 +53,17 @@ class BoolFunc:
         # Storing minterms hashed with the number of 1s
         self._minterms = {}
 
-        # Move this functionality directly into minterm generation later
+        # Converting the string buts into numerical bit lists
         minterms2 = list()
 
         for i in minterms:
-            minterms2.append([int(j) for j in i])
+            minterms2.append(int(i, 2))
 
         for i in minterms2:
-            if sum(i) in self._minterms:
-                self._minterms[sum(i)].append(i)
+            if find_ones(i) in self._minterms:
+                self._minterms[find_ones(i)].append(i)
             else:
-                self._minterms[sum(i)] = [i]
+                self._minterms[find_ones(i)] = [i]
 
         # Storing minterms hashed with the number of 1s
         self._maxterms = {}
@@ -65,18 +72,18 @@ class BoolFunc:
         maxterms2 = list()
 
         for i in maxterms:
-            maxterms2.append([int(j) for j in i])
+            maxterms2.append(int(i, 2))
 
         for i in maxterms2:
-            if (len(variables) - sum(i)) in self._maxterms:
-                self._maxterms[(len(variables) - sum(i))].append(i)
+            if find_zeros(i, len(variables)) in self._maxterms:
+                self._maxterms[find_zeros(i, len(variables))].append(i)
             else:
-                self._maxterms[(len(variables) - sum(i))] = [i]
+                self._maxterms[find_zeros(i, len(variables))] = [i]
 
         if dc:
             # Testing consistency of # of expressions
             okay = test_vals(dc)
-            if not okay: raise InvalidKmapError("Inconsistent number of expressions")
+            if not okay: raise InvalidBooleanFunctionError("Inconsistent number of expressions")
 
             # Testing consistency of # of expressions
             for i in dc:
@@ -115,13 +122,22 @@ class BoolFunc:
     def __repr__(self):
         return copy.deepcopy(self._expression)
 
+    def __eq__(self, func):
+        try:
+            return self.truthtable() == func.truthtable()
+        except AttributeError:
+            raise InvalidBooleanFunctionError("Object isn't a Boolean Function!")
+
     def sop(self):
         """
         Returns the s-o-p form of the boolean function.
         """
         rv = ""
-        for minterm in self.minterms():
-            
+        for num_minterm in self.minterms():
+
+            # Converting numerical minterm to binary form for bitwise checks
+            minterm = bin_conv(num_minterm, len(self.variables()))
+
             # Starting the next term
             if len(rv): term = " + "
             else: term = ""
@@ -129,20 +145,33 @@ class BoolFunc:
             # Checking all the bits of that minterm and forming the term
             for i in range(len(self.variables())):
                 if term != " + " and term != "": term += "*"
-                if minterm[i]:
+                if int(minterm[i]):
                     term += self.variables()[i]
                 else:
-                    term += self.variables()[i] + "'"
+                    term += "~" + self.variables()[i]
             rv += term
         
-        return rv        
+        variables = ""
+        for i in self.variables():
+            variables += i + ", "
+        variables = variables[:-2]
+
+        # Since it is the same Boolean function, all the attributes except the
+        # expression are same. So just copy and return. Makes processing MUCH
+        # faster
+        rv2 = copy.deepcopy(self)
+        rv2._expression = ("f(%s) = %s" %(variables, rv))
+        return rv2        
                     
     def pos(self):
         """
         Returns the p-o-s form of the boolean function.
         """
         rv = ""
-        for maxterm in self.maxterms():
+        for num_maxterm in self.maxterms():
+
+            # Converting numerical maxterm to binary for for bitwise checks
+            maxterm = bin_conv(num_maxterm, len(self.variables()))
 
             # Starting the next factor
             if len(rv): factor = " * ("
@@ -151,14 +180,24 @@ class BoolFunc:
             # Checking all the bits of that maxterm and forming the factor
             for i in range(len(self.variables())):
                 if factor != " * (" and factor != "(": factor += " + "
-                if maxterm[i]:
-                    factor += self.variables()[i] + "'"
+                if int(maxterm[i]):
+                    factor += "~" + self.variables()[i]
                 else:
                     factor += self.variables()[i]
             rv += factor + ")"
         
-        return rv 
-
+        variables = ""
+        for i in self.variables():
+            variables += i + ", "
+        variables = variables[:-2]
+        
+        # Since it is the same Boolean function, all the attributes except the
+        # expression are same. So just copy and return. Makes processing MUCH
+        # faster
+        rv2 = copy.deepcopy(self)
+        rv2._expression = ("f(%s) = %s" %(variables, rv))
+        return rv2
+                    
     def minimise(self):
         """
         Finds and returns the sum-of-products form of the Boolean Function 
@@ -184,15 +223,16 @@ class BoolFunc:
         epi = [] # Essential Prime Implicants
 
 
-        """
-        I am working on this
-        def next_pis(current_pi):
+        
+        def next_pis(current_pi, level = 0):
             """
             Finds the next generation prime implicants from the current ones.
 
             current_pi is a dictionary mapping [num_ones, num_dashes] to a list
             of all the implicants in that category.
             """
+            #if level == 0:
+                
             next_list = []
 
             # Finding all the different categories of PIs
@@ -220,7 +260,6 @@ class BoolFunc:
                         # If PI couldn't be combined, it is an EPI
                         next_list.append(pi)
 
-        """
 
 
 def test_vals(minterms):
@@ -234,3 +273,30 @@ def test_vals(minterms):
         if len(i) != base: return False
 
     return True
+
+def find_ones(n):
+    """
+    Given a number n, returns the number of 1's in its binary representation.
+    """
+    binary = bin(n)[2:]
+    return sum([int(i) for i in binary])
+
+def find_zeros(n, bits):
+    """
+    Given a number n, returns the number of 0's in its binary representation.
+    Considers the "bits" number of bits
+    """
+    return (bits - find_ones(n))
+
+def bin_conv(n, bits):
+    """
+    Given a number n, returns its binary representation in "bits" number of bits
+
+    If "bits", can't completely contain all the bits, returns the lowest sig 
+    bits.
+    """
+    rv = bin(n)[2:]
+    if len(rv) >= bits: return rv[:bits]
+
+    else:
+        return "0"*(bits - len(rv)) + rv
