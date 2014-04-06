@@ -4,7 +4,7 @@ def make_table(expression):
     """
     Given a Boolean expression in the form:
     
-    "f(a, b, c, d) = (a + ~b*(c + d))*(b^c)...."
+    "f(a, b, c, d) = (a + ~b|(c - d))*(b^c)...."
     
     make_table returns a truth table; that is, a dictionary mapping strings of
     possible values for the variables to the value of the function using those
@@ -24,7 +24,7 @@ def make_table(expression):
     """
     
     # Extract the variables and the function itself from the expression.
-    vars, f = parse(expression)
+    vars, f, symbols = parse(expression)
     
     # Create the truth_table variable (a dictionary).
     truth_table = {}
@@ -57,15 +57,22 @@ def make_table(expression):
             f_temp = f_temp.replace(var, binary_num[i])
             i += 1
             
-        # Replace each operator (*, +, ~) with corresponding keywords (and, or, not).
+        # Replace each operator with corresponding keywords (and, or, not).
+        f_temp = f_temp.replace('|', "' or ~")
+        f_temp = f_temp.replace('-', "' and ~")
         f_temp = f_temp.replace('*', ' and ')
+        f_temp = f_temp.replace('^', ' and ')
+        f_temp = f_temp.replace('&', ' and ')
         f_temp = f_temp.replace('+', ' or ')
+        f_temp = f_temp.replace('v', ' or ')
         f_temp = f_temp.replace('~', ' not ')
-
+        f_temp = special_replace(f_temp, "'", ' not ')
+        print(f_temp)
+        
         # Determine the truth value of the function and store it.    
         truth_table[binary_num] = bool(eval(f_temp))
         
-    return vars, truth_table
+    return vars, truth_table, symbols
         
         
         
