@@ -33,7 +33,7 @@ class BF:
         maxterms = [i for i in table if not table[i]]
 
         # Store the vars, TT, user preferred symbols and the expression
-        self._expression = function
+        self._expression = pull_function(function)
         self._variables = variables
         self._table = table
         self._symbols = symbols
@@ -67,6 +67,9 @@ class BF:
                 self._maxterms[find_zeros(i, len(variables))].append(i)
             else:
                 self._maxterms[find_zeros(i, len(variables))] = [i]
+
+    def expression(self):
+        return copy.deepcopy(self._expression)
 
     def minterms(self):
         rv = []
@@ -107,10 +110,10 @@ class BF:
         return copy.deepcopy(self._name)
 
     def __str__(self):
-        return copy.deepcopy(self._expression)
+        return ("%s(%s) = %s" %(self._name, self._varstring(), self.expression()))
 
     def __repr__(self):
-        return copy.deepcopy(self._expression)
+        return ("%s(%s) = %s" %(self._name, self._varstring(), self.expression()))
 
     def __eq__(self, func):
         try:
@@ -118,6 +121,26 @@ class BF:
         except AttributeError:
             raise InvalidBooleanFunctionError("Object isn't a Boolean Function!")
 
+    # Operators to combine boolean functions
+    """
+    def __add__(self, other):
+    
+    def __radd__(self, other):
+
+    def __mul__(self, other):
+
+    def __rmul__(self, other):
+        
+    def __xor__(self, other):
+    
+    def __rxor__(self, other):
+
+    def not(self):
+
+    def nor(self):     
+    
+    def nand(self):
+    """
     def min_expand(self):
         """
         Returns the minterm expansion of the boolean function.
@@ -603,3 +626,28 @@ def find_ones_pi(pi):
         if i == "1": rv += 1
 
     return rv
+
+
+def bf_not(bf):
+    """
+    Returns a not version of the boolean function passed in.
+    """
+    try:
+        string = ("~(%s)" %(bf.expression()))
+        return BF(string)
+    except AttributeError:
+        raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+
+def nor(bf1, bf2):
+    """
+    Returns a NOR-ed version of the boolean functions passed in.
+    """     
+    try:
+        string1 = ("~((%s) + (%s))" %(bf1.expression(), bf2.expression()))
+        return BF(string)
+
+    except AttributeError:
+        raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+
+def nand(self):
+    pass

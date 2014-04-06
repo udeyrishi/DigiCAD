@@ -114,11 +114,11 @@ def find_all(s, ss):
     
     >>> s = "cat1 and cat2 were best friends."
     >>> find_all(s, "cat")
-    [0, 9]    
+    [0, 9]
     
     >>> s = " hello world, world hello"
     >>> find_all(s, "hello")
-    [1, 20]     
+    [1, 20]
 
     >>> s = " hello world, world hello"    
     >>> find_all(s, "l")
@@ -171,15 +171,15 @@ def special_replace(s, c, replacor):
     
     >>> s = "f(a, b, c, d) = (a+b+c)'"
     >>> special_replace(s, "'", " not ")
-    "f(a, b, c, d) =  not (a+b+c)"
+    'f(a, b, c, d) =  not (a+b+c)'
     
     >>> s = "f(a, b, c, d) = (a+b'+c)'"
     >>> special_replace(s, "'", "'")
-    "f(a, b, c, d) = '(a+'b+c)"    
+    "f(a, b, c, d) = '(a+'b+c)"
     
     >>> s = "f(a, b, c, d) = (a'+b'+c)'"
     >>> special_replace(s, "'", " not ")
-    "f(a, b, c, d) =  not ( not a+ not b+c)"  
+    'f(a, b, c, d) =  not ( not a+ not b+c)'
 
     """
     
@@ -318,7 +318,26 @@ def find_name(function):
             return rv
     
     
-    
+def pull_function(function):
+    """
+    Given a function string in the proper format, traces out the boolean function 
+    (removes the function name and variables).
+
+    >>> pull_function("f(a,b,c) = a+b+c")
+    'a+b+c'
+    """
+
+    rv = ""
+    for i in range(len(function)):
+        if function[i] != "=":
+            pass
+        else:
+            break
+
+    if function[i+1] == " ": i += 1
+
+    return function[i+1:]
+
     
     
     
