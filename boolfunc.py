@@ -30,10 +30,11 @@ class BF:
         minterms = [i for i in table if table[i]]
         maxterms = [i for i in table if not table[i]]
 
-        # Store the vars, TT and the expression
+        # Store the vars, TT, user preferred symbols and the expression
         self._expression = function
         self._variables = variables
         self._table = table
+        self._symbols = symbols
 
         # Storing minterms hashed with the number of 1s
         self._minterms = {}
@@ -69,7 +70,7 @@ class BF:
         rv = []
         for i in self._minterms.values():
             rv += i 
-        return rv
+        return set(rv)
 
     def mintermsl(self):
         return copy.deepcopy(self._minterms)
@@ -78,13 +79,13 @@ class BF:
         rv = []
         for i in self._maxterms.values():
             rv += i 
-        return rv
+        return set(rv)
 
     def maxtermsl(self):
         return copy.deepcopy(self._maxterms)
 
     def variables(self):
-        return copy.deepcopy(self._variables)
+        return set(self._variables)
 
     def _varstring(self):
             """
@@ -192,7 +193,7 @@ class BF:
         except KeyError:
             raise KeyError("This value does not exist in the function's truth-table")
             
-    def minimise(self):
+    def min_sop(self):
         """
         Finds and returns the simplified sum-of-products form of the Boolean
         Function.
@@ -277,8 +278,16 @@ class BF:
         rv = form_function(epis, self.variables())
       
         rv2 = copy.deepcopy(self)
-        rv2._expression = ("%s_simp(%s) = %s" %(self.name(), variables, rv))
+        rv2._expression = ("%s_min_sop(%s) = %s" %(self.name(), variables, rv))
         return rv2
+
+    def min_pos(self):
+        """
+        Finds and returns the most simplified POS form of the boolean function.
+
+        Finds sop first, and then converts to pos (as Quine-McCluskey_algorithm
+        works for sop)
+        """
 
         
 def next_pis(current_pi):
