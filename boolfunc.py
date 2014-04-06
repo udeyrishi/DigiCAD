@@ -14,7 +14,7 @@ class BF:
     Creates a boolean function 
     """
 
-    def __init__(self, function, name = 'f', dc=None):
+    def __init__(self, function, name = 'f'):
 
         # This name is useless if the function is in proper form
         # If not in proper form, this name will be applied
@@ -30,21 +30,7 @@ class BF:
         minterms = [i for i in table if table[i]]
         maxterms = [i for i in table if not table[i]]
 
-        # Testing consistency of # of expressions
-        """
-        okay = test_vals(minterms)
-        if not okay: 
-            raise InvalidBooleanFunctionError("Inconsistent number of expressions")
-
-        okay = test_vals(maxterms)
-        if not okay:
-            raise InvalidBooleanFunctionError("Inconsistent number of expressions")
-        """
-        """
-        if len(variables) != len(minterms[0]):
-            raise InvalidBooleanFunctionError("Inconsistent number of expressions")
-        """
-        # Everything is good so store the vars, TT and the expression
+        # Store the vars, TT and the expression
         self._expression = function
         self._variables = variables
         self._table = table
@@ -78,18 +64,6 @@ class BF:
                 self._maxterms[find_zeros(i, len(variables))].append(i)
             else:
                 self._maxterms[find_zeros(i, len(variables))] = [i]
-
-        if dc:
-            # Testing consistency of # of expressions
-            okay = test_vals(dc)
-            if not okay: raise InvalidBooleanFunctionError("Inconsistent number of expressions")
-
-            # Testing consistency of # of expressions
-            for i in dc:
-                if sum(i) in self._dc:
-                    self._dc[sum(i)].append(i)
-                else:
-                    self._dc[sum(i)] = [i]
 
     def minterms(self):
         rv = []
@@ -563,17 +537,6 @@ def form_function(epis, vars):
     else:
         return rv
 
-def test_vals(minterms):
-    """
-    Tests if all the minterms (or dc) contain the same number of Boolean 
-    variables.
-    """
-    base = len(minterms[0])
-
-    for i in minterms:
-        if len(i) != base: return False
-
-    return True
 
 def find_ones(n):
     """
