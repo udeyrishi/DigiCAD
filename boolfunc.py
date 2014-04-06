@@ -1,6 +1,8 @@
 """
 The Boolean Function module for the DigiCAD.
 Runs the under-the-hood Boolean algebra required by it.
+
+Developed by: Udey Rishi
 """
 
 from truth_tables import *
@@ -70,7 +72,7 @@ class BF:
         rv = []
         for i in self._minterms.values():
             rv += i 
-        return set(rv)
+        return copy.deepcopy(rv)
 
     def mintermsl(self):
         return copy.deepcopy(self._minterms)
@@ -79,13 +81,13 @@ class BF:
         rv = []
         for i in self._maxterms.values():
             rv += i 
-        return set(rv)
+        return copy.deepcopy(rv)
 
     def maxtermsl(self):
         return copy.deepcopy(self._maxterms)
 
     def variables(self):
-        return set(self._variables)
+        return copy.deepcopy(self._variables)
 
     def _varstring(self):
             """
@@ -288,7 +290,7 @@ class BF:
         Finds sop first, and then converts to pos (as Quine-McCluskey_algorithm
         works for sop)
         """
-
+        pass
         
 def next_pis(current_pi):
     """
