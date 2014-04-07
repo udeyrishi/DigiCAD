@@ -68,6 +68,13 @@ class BF:
             else:
                 self._maxterms[find_zeros(i, len(variables))] = [i]
 
+
+        # Storing simplified expressions as a cache
+        self._min_exp = None
+        self._max_exp = None
+        self._min_sop = None
+        self._min_pos = None
+
     def expression(self):
         return copy.deepcopy(self._expression)
 
@@ -199,7 +206,7 @@ class BF:
 
     def nand(self, other):
         """
-        Returns a NAND-ed version of slef with the boolean function passed in.
+        Returns a NAND-ed version of self with the boolean function passed in.
         """     
         try:
             string = ("(%s) | (%s)" %(self.expression(), other.expression()))
@@ -212,27 +219,33 @@ class BF:
         """
         Returns the minterm expansion of the boolean function.
         """
-        rv = ""
-        for num_minterm in self.minterms():
+        if self._min_exp:
+            # Checking of there is a cached value
+            rv = self._min_exp
 
-            # Converting numerical minterm to binary form for bitwise checks
-            minterm = bin_conv(num_minterm, len(self.variables()))
+        else: 
+            rv = ""
+            for num_minterm in self.minterms():
 
-            # Starting the next term
-            if len(rv): term = " + "
-            else: term = ""
+                # Converting numerical minterm to binary form for bitwise checks
+                minterm = bin_conv(num_minterm, len(self.variables()))
 
-            # Checking all the bits of that minterm and forming the term
-            for i in range(len(self.variables())):
-                if term != " + " and term != "": term += "*"
-                if int(minterm[i]):
-                    term += self.variables()[i]
-                else:
-                    term += "~" + self.variables()[i]
-            rv += term
-        
-        if rv == "": rv = "0"
+                # Starting the next term
+                if len(rv): term = " + "
+                else: term = ""
 
+                # Checking all the bits of that minterm and forming the term
+                for i in range(len(self.variables())):
+                    if term != " + " and term != "": term += "*"
+                    if int(minterm[i]):
+                        term += self.variables()[i]
+                    else:
+                        term += "~" + self.variables()[i]
+                rv += term
+            
+            if rv == "": rv = "0"
+
+            self._min_exp = rv # Cache the calculated expression
         variables = self._varstring()
 
         # Since it is the same Boolean function, all the attributes except the
@@ -246,26 +259,34 @@ class BF:
         """
         Returns the maxterm expansion form of the boolean function.
         """
-        rv = ""
-        for num_maxterm in self.maxterms():
-
-            # Converting numerical maxterm to binary for for bitwise checks
-            maxterm = bin_conv(num_maxterm, len(self.variables()))
-
-            # Starting the next factor
-            if len(rv): factor = " * ("
-            else: factor = "("
-
-            # Checking all the bits of that maxterm and forming the factor
-            for i in range(len(self.variables())):
-                if factor != " * (" and factor != "(": factor += " + "
-                if int(maxterm[i]):
-                    factor += "~" + self.variables()[i]
-                else:
-                    factor += self.variables()[i]
-            rv += factor + ")"
         
-        if rv == "": rv = "1"
+        if self._max_exp:
+            # Checking of there is a cached value
+            rv = self._max_exp
+
+        else:
+            rv = ""
+            for num_maxterm in self.maxterms():
+
+                # Converting numerical maxterm to binary for for bitwise checks
+                maxterm = bin_conv(num_maxterm, len(self.variables()))
+
+                # Starting the next factor
+                if len(rv): factor = " * ("
+                else: factor = "("
+
+                # Checking all the bits of that maxterm and forming the factor
+                for i in range(len(self.variables())):
+                    if factor != " * (" and factor != "(": factor += " + "
+                    if int(maxterm[i]):
+                        factor += "~" + self.variables()[i]
+                    else:
+                        factor += self.variables()[i]
+                rv += factor + ")"
+            
+            if rv == "": rv = "1"
+
+            self._max_exp = rv # Caching the calculated value
         variables = self._varstring()
         
         # Since it is the same Boolean function, all the attributes except the
@@ -309,70 +330,77 @@ class BF:
         # PI contains all the different levels of PIs, such that pi[i] is the 2^i
         # level PI.
 
-        if len(self.minterms()) == 0: 
-            # Extreme case
-            rv = '0'
+        if self._min_sop:
+            # Retrieving from cache
+            rv = self._min_sop
+
         else:
-            pis_num = self.mintermsl() # Prime implicants, PIs = numerical minterms
+            if len(self.minterms()) == 0: 
+                # Extreme case
+                rv = '0'
+            else:
+                pis_num = self.mintermsl() # Prime implicants, PIs = numerical minterms
 
-            # Converting the minterms to a format appropriate for PIs
-            pis = {}
+                # Converting the minterms to a format appropriate for PIs
+                pis = {}
 
-            for i in pis_num:
-                pis[i] = [] # Create empty minterm list for all categories 
-                for j in pis_num[i]:
-                    string_minterm = bin_conv(j, int(math.log(len(self.truthtable()), 2)))
-                    pis[i].append(string_minterm)
+                for i in pis_num:
+                    pis[i] = [] # Create empty minterm list for all categories 
+                    for j in pis_num[i]:
+                        string_minterm = bin_conv(j, int(math.log(len(self.truthtable()), 2)))
+                        pis[i].append(string_minterm)
 
-            pis = [pis] # Converting to list to accomodate for future additions
+                pis = [pis] # Converting to list to accomodate for future additions
 
-            sim_pis = [] # Contains all the simplified prime implicants discovered so far
+                sim_pis = [] # Contains all the simplified prime implicants discovered so far
 
-            i = 0
-            comb_register = {}
-            while(1):
-                sim_pi_found, pis_calc, temp_register = next_pis(pis[i])
+                i = 0
+                comb_register = {}
+                while(1):
+                    sim_pi_found, pis_calc, temp_register = next_pis(pis[i])
 
-                # Because simplified PIs for current PIs are generated
-                sim_pis += sim_pi_found
+                    # Because simplified PIs for current PIs are generated
+                    sim_pis += sim_pi_found
 
-                for merge in temp_register:
-                    # For all the merged results
+                    for merge in temp_register:
+                        # For all the merged results
 
-                    parents = copy.deepcopy(temp_register[merge])
+                        parents = copy.deepcopy(temp_register[merge])
 
-                    for parent in parents:
-                        if parent in comb_register:
-                            # Checking if parents of merge were themselves merged earlier
-                            grandparents = comb_register[parent]
-                            # Substitute the parents with grandparents to get the minterms
-                            temp_register[merge] += grandparents
-                            temp_register[merge].remove(parent)
+                        for parent in parents:
+                            if parent in comb_register:
+                                # Checking if parents of merge were themselves merged earlier
+                                grandparents = comb_register[parent]
+                                # Substitute the parents with grandparents to get the minterms
+                                temp_register[merge] += grandparents
+                                temp_register[merge].remove(parent)
 
-                            # Pop off the parent to remove duplicacy
-                            #comb_register.pop(parent) 
+                                # Pop off the parent to remove duplicacy
+                                #comb_register.pop(parent) 
 
-                # Record the combination results
-                comb_register.update(temp_register)
+                    # Record the combination results
+                    comb_register.update(temp_register)
 
-                if pis_calc == {i:[] for i in self.mintermsl()}:
-                    break # The most simplified version is created. So end
-                else:
-                    pis.append(pis_calc)
-                    i += 1
+                    if pis_calc == {i:[] for i in self.mintermsl()}:
+                        break # The most simplified version is created. So end
+                    else:
+                        pis.append(pis_calc)
+                        i += 1
 
-            # Converting the string minterms to numeric minterms
-            for i in comb_register:
-                for j in range(len(comb_register[i])):
-                    comb_register[i][j] = int(comb_register[i][j], 2)
+                # Converting the string minterms to numeric minterms
+                for i in comb_register:
+                    for j in range(len(comb_register[i])):
+                        comb_register[i][j] = int(comb_register[i][j], 2)
 
-            # Generating EPIs from simplified PIs
-            epis = gen_epi(self.minterms(), sim_pis, comb_register)
-            
-            # Generating Output
-            variables = self._varstring()
-            rv = form_function(epis, self.variables())
-      
+                # Generating EPIs from simplified PIs
+                epis = gen_epi(self.minterms(), sim_pis, comb_register)
+                
+                # Generating Output
+                variables = self._varstring()
+                rv = form_function(epis, self.variables())
+                
+                self._min_sop = rv # Caching the calculated value
+
         rv2 = copy.deepcopy(self)
         rv2._name = ("%s_min_sop" %self.name())
         rv2._expression = rv
