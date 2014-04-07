@@ -14,7 +14,7 @@ def parse(s):
     '*'         'AND'
     '+'         'OR'
     '~'         'NOT'
-    '^'         'XOR'
+    '%'         'XOR'
     '|'         'NAND'
     '-'         'NOR'
 

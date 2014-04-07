@@ -500,32 +500,41 @@ def next_pis(current_pi):
     entry_flag = False # Checks if the next for loop was even started
     # If only 1 category of PIs are sent, there is nothing to combine.
 
-    # -1 because last category can't be processed
-    for i in range(len(categories) - 1):
+    
+    for i in range(len(categories)):
         entry_flag = True
         category = categories[i]
-        next_category = categories[i+1]
+        if i+1 < len(categories):
+            # We haven't reached the last category
+            next_category = categories[i+1]
+        else: 
+            # Last category, so no comparison to a non-existent next-category
+            next_category = None
 
         for pi in current_pi[category]:
             # Checking for all PIs in current category
-            is_sim = True
+            #is_sim = True
             
-            for high_pi in current_pi[next_category]:
-                # Comparing with all PIs in next category
+            if next_category:
+                # Only try to merge if the next category exists
+                for high_pi in current_pi[next_category]:
+                    # Comparing with all PIs in next category
 
-                combination = combine(pi, high_pi)
-                if combination:
-                    # If they differ by just 1 bit, then combination not = None
-                    # Merge them
-                    next_dict[category].append(combination)
-                    is_sim = False
-                    comb_register[combination] = [pi, high_pi]
-                    # Adding the high_pi into list merged_pis as it is technically
-                    # now merged. It is NOT the most simplified PI, even if no
-                    # higher (higher than high) mergable PI is found.
-                    merged_pis.append(high_pi)
+                    combination = combine(pi, high_pi)
+                    if combination:
+                        # If they differ by just 1 bit, then combination not = None
+                        # Merge them
+                        next_dict[category].append(combination)
+                        #is_sim = False
+                        comb_register[combination] = [pi, high_pi]
+                        # Adding the high_pi into list merged_pis as it is technically
+                        # now merged. It is NOT the most simplified PI, even if no
+                        # higher (higher than high) mergable PI is found.
+                        merged_pis.append(high_pi)
+                        merged_pis.append(pi)
 
-            if is_sim and pi not in merged_pis:
+            if pi not in merged_pis:
+            #if is_sim and pi not in merged_pis:
                 # If PI couldn't be combined, it is a simplified PI
                 sim_pis.append(pi)
 
@@ -814,3 +823,8 @@ def xor(bf1, bf2):
     simplifying)
     """
     return bf1^bf2    
+
+
+a = BF("a+b|c %d")
+b = a.bf_not()
+c = b.min_sop()
