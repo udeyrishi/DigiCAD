@@ -241,66 +241,70 @@ class BF:
 
         # PI contains all the different levels of PIs, such that pi[i] is the 2^i
         # level PI.
-        
-        pis_num = self.mintermsl() # Prime implicants, PIs = numerical minterms
 
-        # Converting the minterms to a format appropriate for PIs
-        pis = {}
+        if len(self.minterms()) == 0: 
+            # Extreme case
+            rv = '0'
+        else:
+            pis_num = self.mintermsl() # Prime implicants, PIs = numerical minterms
 
-        for i in pis_num:
-            pis[i] = [] # Create empty minterm list for all categories 
-            for j in pis_num[i]:
-                string_minterm = bin_conv(j, int(math.log(len(self.truthtable()), 2)))
-                pis[i].append(string_minterm)
+            # Converting the minterms to a format appropriate for PIs
+            pis = {}
 
-        pis = [pis] # Converting to list to accomodate for future additions
+            for i in pis_num:
+                pis[i] = [] # Create empty minterm list for all categories 
+                for j in pis_num[i]:
+                    string_minterm = bin_conv(j, int(math.log(len(self.truthtable()), 2)))
+                    pis[i].append(string_minterm)
 
-        sim_pis = [] # Contains all the simplified prime implicants discovered so far
+            pis = [pis] # Converting to list to accomodate for future additions
 
-        i = 0
-        comb_register = {}
-        while(1):
-            sim_pi_found, pis_calc, temp_register = next_pis(pis[i])
+            sim_pis = [] # Contains all the simplified prime implicants discovered so far
 
-            # Because simplified PIs for current PIs are generated
-            sim_pis += sim_pi_found
+            i = 0
+            comb_register = {}
+            while(1):
+                sim_pi_found, pis_calc, temp_register = next_pis(pis[i])
 
-            for merge in temp_register:
-                # For all the merged results
+                # Because simplified PIs for current PIs are generated
+                sim_pis += sim_pi_found
 
-                parents = copy.deepcopy(temp_register[merge])
+                for merge in temp_register:
+                    # For all the merged results
 
-                for parent in parents:
-                    if parent in comb_register:
-                        # Checking if parents of merge were themselves merged earlier
-                        grandparents = comb_register[parent]
-                        # Substitute the parents with grandparents to get the minterms
-                        temp_register[merge] += grandparents
-                        temp_register[merge].remove(parent)
+                    parents = copy.deepcopy(temp_register[merge])
 
-                        # Pop off the parent to remove duplicacy
-                        #comb_register.pop(parent) 
+                    for parent in parents:
+                        if parent in comb_register:
+                            # Checking if parents of merge were themselves merged earlier
+                            grandparents = comb_register[parent]
+                            # Substitute the parents with grandparents to get the minterms
+                            temp_register[merge] += grandparents
+                            temp_register[merge].remove(parent)
 
-            # Record the combination results
-            comb_register.update(temp_register)
+                            # Pop off the parent to remove duplicacy
+                            #comb_register.pop(parent) 
 
-            if pis_calc == {i:[] for i in self.mintermsl()}:
-                break # The most simplified version is created. So end
-            else:
-                pis.append(pis_calc)
-                i += 1
+                # Record the combination results
+                comb_register.update(temp_register)
 
-        # Converting the string minterms to numeric minterms
-        for i in comb_register:
-            for j in range(len(comb_register[i])):
-                comb_register[i][j] = int(comb_register[i][j], 2)
+                if pis_calc == {i:[] for i in self.mintermsl()}:
+                    break # The most simplified version is created. So end
+                else:
+                    pis.append(pis_calc)
+                    i += 1
 
-        # Generating EPIs from simplified PIs
-        epis = gen_epi(self.minterms(), sim_pis, comb_register)
-        
-        # Generating Output
-        variables = self._varstring()
-        rv = form_function(epis, self.variables())
+            # Converting the string minterms to numeric minterms
+            for i in comb_register:
+                for j in range(len(comb_register[i])):
+                    comb_register[i][j] = int(comb_register[i][j], 2)
+
+            # Generating EPIs from simplified PIs
+            epis = gen_epi(self.minterms(), sim_pis, comb_register)
+            
+            # Generating Output
+            variables = self._varstring()
+            rv = form_function(epis, self.variables())
       
         rv2 = copy.deepcopy(self)
         rv2._expression = ("%s_min_sop(%s) = %s" %(self.name(), variables, rv))
@@ -376,9 +380,12 @@ def next_pis(current_pi):
     categories = list(current_pi)
     categories.sort()
 
+    entry_flag = False # Checks if the next for loop was even started
+    # If only 1 category of PIs are sent, there is nothing to combine.
+
     # -1 because last category can't be processed
     for i in range(len(categories) - 1):
-
+        entry_flag = True
         category = categories[i]
         next_category = categories[i+1]
 
@@ -404,6 +411,12 @@ def next_pis(current_pi):
             if is_sim and pi not in merged_pis:
                 # If PI couldn't be combined, it is a simplified PI
                 sim_pis.append(pi)
+
+    if not entry_flag:
+        # Only 1 category in current_pi
+        i = list(current_pi.keys())[0]
+        # Thus, all these PIs are already simplified
+        sim_pis += current_pi[i]
 
     # At this point, there will be duplicates of newly created PIs as different
     # combinations can lead to the same mere.
@@ -469,45 +482,49 @@ def gen_epi(minterms, sim_pis, comb_register):
     """
     EPI = []
 
-    # Finding minterms that are formed by just 1 sim_pi
-    pi_tally = {i:[] for i in minterms}
+    if sim_pis and comb_register == {}:
+        # Extreme case where no merges happened, but there are PIs in sim_pis
+        # This sim_pis are the EPI
+        EPI = sim_pis        
 
-    # Keeps track of which minterms are already covered by the contents of EPI
-    minterms_covered = []
+    else:
+        # Finding minterms that are formed by just 1 sim_pi
+        pi_tally = {i:[] for i in minterms}
 
-    for pi in sim_pis:
-        # Loop over all the simplified PIs
-        for minterm in comb_register[pi]:
-            # Run over all the minterms that were combined to get this PI
-            pi_tally[minterm].append(pi)
-            # Add this PI to that minterm's PI-tally
+        # Keeps track of which minterms are already covered by the contents of EPI
+        minterms_covered = []
 
-    for minterm in pi_tally:
-        if len(pi_tally[minterm]) == 1:
-            # This minterm can be formed only by 1 PI
-            # This PI is EPI
-            EPI.append(pi_tally[minterm][0])
+        for pi in sim_pis:
+            # Loop over all the simplified PIs
+            for minterm in comb_register[pi]:
+                # Run over all the minterms that were combined to get this PI
+                pi_tally[minterm].append(pi)
+                # Add this PI to that minterm's PI-tally
 
-            # Pulling out all the minterms that can be covered by this EPI
-            # Putting them in the list of minterms covered
-            minterms_covered += comb_register[pi_tally[minterm][0]]
+        for minterm in pi_tally:
+            if len(pi_tally[minterm]) == 1:
+                # This minterm can be formed only by 1 PI
+                # This PI is EPI
+                EPI.append(pi_tally[minterm][0])
 
-    # Work left
-    minterms_left = [i for i in minterms if i not in minterms_covered]
+                # Pulling out all the minterms that can be covered by this EPI
+                # Putting them in the list of minterms covered
+                minterms_covered += comb_register[pi_tally[minterm][0]]
 
-    while minterms_left:
-        
-        minterm = minterms_left.pop()
+        # Work left
+        minterms_left = [i for i in minterms if i not in minterms_covered]
 
-        possible_choices = pi_tally[minterm]
-        choice = max(possible_choices, key = lambda x: len(comb_register[x]))
+        while minterms_left:
+            minterm = minterms_left.pop()
+            possible_choices = pi_tally[minterm]
+            choice = max(possible_choices, key = lambda x: len(comb_register[x]))
 
-        EPI.append(choice)
-        # The choice PI will have some other minterms that it covers, which might
-        # be there in the list of minterms_left. Pop them off
+            EPI.append(choice)
+            # The choice PI will have some other minterms that it covers, which might
+            # be there in the list of minterms_left. Pop them off
 
-        for i in comb_register[choice]:
-            if i in minterms_left: minterms_left.remove(i)
+            for i in comb_register[choice]:
+                if i in minterms_left: minterms_left.remove(i)
 
 
     return EPI
@@ -643,7 +660,7 @@ def nor(bf1, bf2):
     Returns a NOR-ed version of the boolean functions passed in.
     """     
     try:
-        string1 = ("~((%s) + (%s))" %(bf1.expression(), bf2.expression()))
+        string = ("~((%s) + (%s))" %(bf1.expression(), bf2.expression()))
         return BF(string)
 
     except AttributeError:
