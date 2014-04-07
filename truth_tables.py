@@ -24,7 +24,7 @@ def make_table(expression):
     """
     
     # Extract the variables and the function itself from the expression.
-    vars, f, symbols = parse(expression)
+    vars, f = parse(expression) 
     
     # Create the truth_table variable (a dictionary).
     truth_table = {}
@@ -61,18 +61,15 @@ def make_table(expression):
         f_temp = f_temp.replace('|', "' or ~")
         f_temp = f_temp.replace('-', "' and ~")
         f_temp = f_temp.replace('*', ' and ')
-        f_temp = f_temp.replace('^', ' and ')
-        f_temp = f_temp.replace('&', ' and ')
         f_temp = f_temp.replace('+', ' or ')
         f_temp = f_temp.replace('v', ' or ')
         f_temp = f_temp.replace('~', ' not ')
         f_temp = special_replace(f_temp, "'", ' not ')
-        print(f_temp)
         
         # Determine the truth value of the function and store it.    
         truth_table[binary_num] = bool(eval(f_temp))
         
-    return vars, truth_table, symbols
+    return vars, truth_table, f
         
         
         
