@@ -351,7 +351,7 @@ class BF:
                 # There are no minterms
                 rv = '0'
             
-            elif set(self.truthtable().values()) == {True}:
+            elif len(self.maxterms()) == 0:
             # All values are true, i.e., all combinations are minterms
                 rv = "1"
 
