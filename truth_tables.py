@@ -25,6 +25,7 @@ def make_table(expression):
     
     # Extract the variables and the function itself from the expression.
     vars, f = parse(expression) 
+    f_clean = f.replace('^', '%')
     
     # Create the truth_table variable (a dictionary).
     truth_table = {}
@@ -69,7 +70,7 @@ def make_table(expression):
         # Determine the truth value of the function and store it.    
         truth_table[binary_num] = bool(eval(f_temp))
         
-    return vars, truth_table, f
+    return vars, truth_table, f_clean
         
         
         

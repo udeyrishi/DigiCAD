@@ -199,7 +199,6 @@ class BF:
         """
         try:
             string = ("~(%s)" %(self.expression()))
-            string = string.replace('^', '%')
             return BF(string, ("%s_NOT" %self.name()))
         except AttributeError:
             raise InvalidBooleanFunctionError("The object is not a Boolean Function")
