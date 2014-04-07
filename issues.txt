@@ -1,5 +1,0 @@
-IN theory, the pos or sop forms of a function should be used to generate the same function.
-
-Can't parse the pos or sop form. Bug in strings.py
-
--NAND and NOR produce incorrect results!

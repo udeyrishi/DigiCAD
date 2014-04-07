@@ -3,6 +3,10 @@ The Boolean Function module for the DigiCAD.
 Runs the under-the-hood Boolean algebra required by it.
 
 Developed by: Udey Rishi
+
+Please note that the test cases might state that the test failed. The exact 
+result depends on how python interpreter decides to store dictionaries. In case
+test fails, check the 'expected' vs. 'got' values to verify manually.
 """
 
 from truth_tables import *
@@ -31,6 +35,7 @@ class BF:
         #variables, table, symbols = make_table(function)
         variables, table, expression = make_table(function)
 
+        variables.sort()
         minterms = [i for i in table if table[i]]
         maxterms = [i for i in table if not table[i]]
 
@@ -85,6 +90,7 @@ class BF:
         rv = []
         for i in self._minterms.values():
             rv += i 
+        rv.sort()
         return copy.deepcopy(rv)
 
     def mintermsl(self):
@@ -94,6 +100,7 @@ class BF:
         rv = []
         for i in self._maxterms.values():
             rv += i 
+        rv.sort()
         return copy.deepcopy(rv)
 
     def maxtermsl(self):
@@ -347,18 +354,21 @@ class BF:
                 # Converting the minterms to a format appropriate for PIs
                 pis = {}
 
+                comb_register = {}
+
                 for i in pis_num:
                     pis[i] = [] # Create empty minterm list for all categories 
                     for j in pis_num[i]:
                         string_minterm = bin_conv(j, int(math.log(len(self.truthtable()), 2)))
                         pis[i].append(string_minterm)
+                        # Populating the cover sheet comb register
+                        comb_register[string_minterm] = [string_minterm] 
 
                 pis = [pis] # Converting to list to accomodate for future additions
 
                 sim_pis = [] # Contains all the simplified prime implicants discovered so far
 
                 i = 0
-                comb_register = {}
                 while(1):
                     sim_pi_found, pis_calc, temp_register = next_pis(pis[i])
 
@@ -435,19 +445,19 @@ def next_pis(current_pi):
     >>> sim_pis == []
     True
     >>> npis # Order may be opposite, but correct values tested 
-    {1: ['100-', '-100', '1-00', '10-0'], 2: ['1-10', '11-0', '10-1', '101-'], 3: ['1-11', '111-'], 4: []}
+    {1: ['100-', '-100', '1-00', '10-0'], 2: ['11-0', '10-1', '1-10', '101-'], 3: ['1-11', '111-'], 4: []}
 
-    >>> comb_register
-    {'-100': ['0100', '1100'],
-     '1-00': ['1000', '1100'],
-     '1-10': ['1010', '1110'],
-     '1-11': ['1011', '1111'],
-     '10-0': ['1000', '1010'],
-     '10-1': ['1001', '1011'],
-     '100-': ['1000', '1001'],
-     '101-': ['1010', '1011'],
-     '11-0': ['1100', '1110'],
-     '111-': ['1110', '1111']}
+    >>> comb_register == {'-100': ['0100', '1100'], \
+                          '1-00': ['1000', '1100'], \
+                          '1-10': ['1010', '1110'], \
+                          '1-11': ['1011', '1111'], \
+                          '10-0': ['1000', '1010'], \
+                          '10-1': ['1001', '1011'], \
+                          '100-': ['1000', '1001'], \
+                          '101-': ['1010', '1011'], \
+                          '11-0': ['1100', '1110'], \
+                          '111-': ['1110', '1111']}
+    True
 
     >>> sim_pis2, npis2, comb_register2 = next_pis(npis)
     >>> sim_pis2
@@ -736,6 +746,13 @@ def find_ones_pi(pi):
     """
     Given a PI (in its standard format), returns the number of 1's contained in 
     it.
+
+    >>> find_ones_pi('10101')
+    3
+    >>> find_ones_pi('11')
+    2
+    >>> find_ones_pi('10--1')
+    2
     """
     rv = 0
     for i in pi:
@@ -789,3 +806,8 @@ def xor(bf1, bf2):
     simplifying)
     """
     return bf1^bf2    
+
+
+
+a = BF("a- b |c%d")
+a.min_sop()
