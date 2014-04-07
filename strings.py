@@ -97,39 +97,17 @@ def parse(s):
     function = special_replace(function, "'", ' not ')
     function = function.replace(' not ', "~")
     
-    # Find all 'NOR' symbols and enclose those terms with brackets.
-    i = -1
-    while 1:
-        i += 1
-        nor_symbols = find_all(function, '-')
-        if i != len(nor_symbols):
-            for symbol in nor_symbols[i:]:
-                function = enclose(function, symbol)
-        else:
-            break
-                            
-    # Find all 'NAND' symbols and enclose those terms with brackets.
-    i = -1
-    while 1:
-        i += 1
-        nand_symbols = find_all(function, '|')
-        if i != len(nand_symbols):
-            for symbol in nand_symbols[i:]:
-                function = enclose(function, symbol)
-        else:
-            break 
-
-    # Find all 'XOR' symbols and enclose their following terms with brackets.
-    i = -1
-    while 1:
-        i += 1
-        xor_symbols = find_all(function, '^')
-        if i != len(xor_symbols):
-            for symbol in xor_symbols[i:]:
-                function = enclose(function, symbol+1)
-        else:
-            break
-
+    # Find all 'NOR', 'NAND, and 'XOR symbols and enclose those terms 
+    # with brackets. Walk through the function one character at a time 
+    # from left to right to preserve order of operations.
+    pos = 0
+    while pos < len(function):
+        if function[pos] == '^':
+            function = enclose(function, pos+1)
+        elif function[pos] in {'-', '|'}:
+            function = enclose(function, pos)
+            pos += 1
+        pos += 1        
     return variables, function
 
     
