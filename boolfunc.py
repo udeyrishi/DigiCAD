@@ -28,7 +28,7 @@ class BF:
         # Parsing out the list of variables in the expression and creating the
         # truth table
 
-        # variables, table, symbols = make_table(function)
+        #variables, table, symbols = make_table(function)
         variables, table, expression = make_table(function)
 
         minterms = [i for i in table if table[i]]
@@ -416,7 +416,7 @@ class BF:
         Finds sop first, and then converts to pos (as Quine-McCluskey_algorithm
         works for sop)
         """
-        pass
+        print("Still under development. Try min_sop instead")
         
 def next_pis(current_pi):
     """
