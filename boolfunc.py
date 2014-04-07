@@ -346,7 +346,7 @@ class BF:
 
         
         else:
-            # 3 Extreme cases
+            # 2 Extreme cases
             if len(self.minterms()) == 0: 
                 # There are no minterms
                 rv = '0'
@@ -355,6 +355,7 @@ class BF:
             # All values are true, i.e., all combinations are minterms
                 rv = "1"
 
+            # General case
             else:
                 pis_num = self.mintermsl() # Prime implicants, PIs = numerical minterms
 
