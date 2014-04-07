@@ -104,10 +104,20 @@ def parse(s):
     while pos < len(function):
         if function[pos] == '^':
             function = enclose(function, pos+1)
+            function = enclose(function, pos)
+            pos += 1
         elif function[pos] in {'-', '|'}:
             function = enclose(function, pos)
             pos += 1
-        pos += 1        
+        pos += 1    
+    """    
+    pos = 0    
+    while pos < len(function):
+        if function[pos] == '^':
+            function = enclose(function, pos)
+            pos += 1
+        pos += 1              
+    """
     return variables, function
 
     

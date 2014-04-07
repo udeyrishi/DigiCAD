@@ -179,7 +179,7 @@ class BF:
 
     def __xor__(self, other):
         try:
-            return BF("(%s) ^ (%s)" %(self.expression(), other.expression()), \
+            return BF("(%s) % (%s)" %(self.expression(), other.expression()), \
                       "%s_XOR_%s" %(self.name(), other.name()))
             
         except AttributeError:
@@ -187,7 +187,7 @@ class BF:
         
     def __rxor__(self, other):
         try:
-            return BF("(%s) ^ (%s)" %(other.expression(), self.expression()), \
+            return BF("(%s) % (%s)" %(other.expression(), self.expression()), \
                       "%s_XOR_%s" %(other.name(), self.name()))
             
         except AttributeError:
@@ -822,7 +822,7 @@ def xor(bf1, bf2):
     Does the boolean XOR operation and returns the resulting function (without 
     simplifying)
     """
-    return bf1^bf2    
+    return bf1%bf2    
 
 
 a = BF("a+b|c %d")
