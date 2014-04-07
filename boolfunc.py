@@ -806,8 +806,3 @@ def xor(bf1, bf2):
     simplifying)
     """
     return bf1^bf2    
-
-
-
-a = BF("a- b |c%d")
-a.min_sop()
