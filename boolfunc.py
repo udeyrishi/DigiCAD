@@ -27,16 +27,19 @@ class BF:
 
         # Parsing out the list of variables in the expression and creating the
         # truth table
-        variables, table, symbols = make_table(function)
-        
+
+        # variables, table, symbols = make_table(function)
+        variables, table, expression = make_table(function)
+
         minterms = [i for i in table if table[i]]
         maxterms = [i for i in table if not table[i]]
 
         # Store the vars, TT, user preferred symbols and the expression
-        self._expression = pull_function(function)
+        #self._expression = pull_function(function)
+        self._expression = expression
         self._variables = variables
         self._table = table
-        self._symbols = symbols
+        #self._symbols = symbols
 
         # Storing minterms hashed with the number of 1s
         self._minterms = {}
