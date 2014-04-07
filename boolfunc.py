@@ -344,10 +344,17 @@ class BF:
             # Retrieving from cache
             rv = self._min_sop
 
+        
         else:
+            # 3 Extreme cases
             if len(self.minterms()) == 0: 
-                # Extreme case
+                # There are no minterms
                 rv = '0'
+            
+            elif set(self.truthtable().values()) == {True}:
+            # All values are true, i.e., all combinations are minterms
+                rv = "1"
+
             else:
                 pis_num = self.mintermsl() # Prime implicants, PIs = numerical minterms
 
