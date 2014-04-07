@@ -713,6 +713,7 @@ def find_ones_pi(pi):
     return rv
 
 
+# Copying the nethods as functions to make DigiCAD user friendly
 def bf_not(bf):
     """
     Returns a not version of the boolean function passed in.
@@ -730,3 +731,30 @@ def nand(bf1, bf2):
     Returns a NAND-ed version of the boolean functions passed in.
     """     
     return bf1.nand(bf2)
+
+def equal(bf1, bf2):
+    """
+    Checks if the two BFs are equivalent
+    """
+    return bf1 == bf2
+    
+def bf_or(bf1, bf2):
+    """
+    Does the boolean OR operation and returns the resulting function (without 
+    simplifying)
+    """
+    return bf1 + bf2
+
+def bf_and(bf1, bf2):
+    """
+    Does the boolean AND operation and returns the resulting function (without 
+    simplifying)
+    """
+    return bf1*bf2
+    
+def xor(bf1, bf2):
+    """
+    Does the boolean XOR operation and returns the resulting function (without 
+    simplifying)
+    """
+    return bf1^bf2    
