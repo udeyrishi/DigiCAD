@@ -121,26 +121,93 @@ class BF:
         except AttributeError:
             raise InvalidBooleanFunctionError("Object isn't a Boolean Function!")
 
-    # Operators to combine boolean functions
-    """
-    def __add__(self, other):
     
+    # Operators to combine boolean functions
+    
+    def __add__(self, other):
+        try:
+            return BF("(%s) + (%s)" %(self.expression(), other.expression()), \
+                      "%s_OR_%s" %(self.name(), other.name()))
+
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+
     def __radd__(self, other):
+        try:
+            return BF("(%s) + (%s)" %(other.expression(), self.expression()), \
+                      "%s_OR_%s" %(other.name(), self.name()))
+            
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+        
 
     def __mul__(self, other):
+        try:
+            return BF("(%s) * (%s)" %(self.expression(), other.expression()), \
+                      "%s_AND_%s" %(self.name(), other.name()))
 
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+
+
+    
     def __rmul__(self, other):
+        try:
+            return BF("(%s) * (%s)" %(other.expression(), self.expression()), \
+                      "%s_AND_%s" %(other.name(), self.name()))
+            
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
         
+
     def __xor__(self, other):
-    
+        try:
+            return BF("(%s) ^ (%s)" %(self.expression(), other.expression()), \
+                      "%s_XOR_%s" %(self.name(), other.name()))
+            
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+        
     def __rxor__(self, other):
+        try:
+            return BF("(%s) ^ (%s)" %(other.expression(), self.expression()), \
+                      "%s_XOR_%s" %(other.name(), self.name()))
+            
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
 
-    def not(self):
+    def bf_not(self):
+        """
+        Returns a not version of the boolean function.
+        """
+        try:
+            string = ("~(%s)" %(self.expression()))
+            return BF(string, ("%s_NOT" %self.name()))
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
 
-    def nor(self):     
-    
-    def nand(self):
-    """
+    def nor(self, other):
+        """
+        Returns a NOR-ed version of self with the boolean function passed in.
+        """     
+        try:
+            string = ("(%s) - (%s)" %(self.expression(), other.expression()))
+            return BF(string, ("%s_NOR_%s" %(self.name(), other.name())))
+
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+
+    def nand(self, other):
+        """
+        Returns a NAND-ed version of slef with the boolean function passed in.
+        """     
+        try:
+            string = ("(%s) | (%s)" %(self.expression(), other.expression()))
+            return BF(string, ("%s_NAND_%s" %(self.name(), other.name())))
+
+        except AttributeError:
+            raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+
     def min_expand(self):
         """
         Returns the minterm expansion of the boolean function.
@@ -307,7 +374,8 @@ class BF:
             rv = form_function(epis, self.variables())
       
         rv2 = copy.deepcopy(self)
-        rv2._expression = ("%s_min_sop(%s) = %s" %(self.name(), variables, rv))
+        rv2._name = ("%s_min_sop" %self.name())
+        rv2._expression = rv
         return rv2
 
     def min_pos(self):
@@ -649,22 +717,16 @@ def bf_not(bf):
     """
     Returns a not version of the boolean function passed in.
     """
-    try:
-        string = ("~(%s)" %(bf.expression()))
-        return BF(string)
-    except AttributeError:
-        raise InvalidBooleanFunctionError("The object is not a Boolean Function")
+    return bf.bf_not()
 
 def nor(bf1, bf2):
     """
     Returns a NOR-ed version of the boolean functions passed in.
     """     
-    try:
-        string = ("~((%s) + (%s))" %(bf1.expression(), bf2.expression()))
-        return BF(string)
+    return bf1.nor(bf2)
 
-    except AttributeError:
-        raise InvalidBooleanFunctionError("The object is not a Boolean Function")
-
-def nand(self):
-    pass
+def nand(bf1, bf2):
+    """
+    Returns a NAND-ed version of the boolean functions passed in.
+    """     
+    return bf1.nand(bf2)
