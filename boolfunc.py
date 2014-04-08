@@ -126,6 +126,8 @@ class BF:
     def name(self):
         return copy.deepcopy(self._name)
 
+    def _print(self):
+        return ("%s(%s) = %s" %(self._name, self._varstring(), self.expression()))       
     def __str__(self):
         return ("%s(%s) = %s" %(self._name, self._varstring(), self.expression()))
 
@@ -262,7 +264,8 @@ class BF:
         # expression are same. So just copy and return. Makes processing MUCH
         # faster
         rv2 = copy.deepcopy(self)
-        rv2._expression = ("%s_min_expand(%s) = %s" %(self.name(), variables, rv))
+        rv2._name = "%s_min_expand" %self.name()
+        rv2._expression = "%s" %rv
         return rv2        
                     
     def max_expand(self):
@@ -303,7 +306,8 @@ class BF:
         # expression are same. So just copy and return. Makes processing MUCH
         # faster
         rv2 = copy.deepcopy(self)
-        rv2._expression = ("%s_max_expand(%s) = %s" %(self.name(), variables, rv))
+        rv2._name = "%s_max_expand" %self.name()
+        rv2._expression = "%s" %rv
         return rv2
     
     def sub(self, values):
@@ -823,8 +827,3 @@ def xor(bf1, bf2):
     simplifying)
     """
     return bf1%bf2    
-
-
-a = BF("a+b|c %d")
-b = a.bf_not()
-c = b.min_sop()
