@@ -51,6 +51,8 @@ def parse(s):
     Example:
     "new_function = BF("f(a, b) = a+b")"
     will create the function 'a+b'. There are various methods you can use on this as part of the BF class.
+    
+    Terms should be enclosed with appropriate brackets in the input function.
     """
     
     position = -1
@@ -112,20 +114,14 @@ def parse(s):
     while pos < len(function):
         if function[pos] == '^':
             function = enclose(function, pos+1)
+            print(function)
             function = enclose(function, pos)
             pos += 1
         elif function[pos] in {'-', '|'}:
             function = enclose(function, pos)
             pos += 1
         pos += 1    
-    """    
-    pos = 0    
-    while pos < len(function):
-        if function[pos] == '^':
-            function = enclose(function, pos)
-            pos += 1
-        pos += 1              
-    """
+
     return variables, function
 
     
