@@ -8,15 +8,16 @@ def parse(s):
     
     The user can input a Boolean expression using different symbols for 'AND', 'OR',
     etc. (listed below), but the output will only use one set of symbols. 
+    
     The default set of symbols used in the output are:
     
-    Symbol      Operator
-    '*'         'AND'
-    '+'         'OR'
-    '~'         'NOT'
-    '%'         'XOR'
-    '|'         'NAND'
-    '-'         'NOR'
+    Output Symbol       Operator
+    '*'                 'AND'
+    '+'                 'OR'
+    '~'                 'NOT'
+    '%'                 'XOR'
+    '|'                 'NAND'
+    '-'                 'NOR'
 
     Expressions are expected to be in the form:
         
@@ -29,20 +30,27 @@ def parse(s):
     must be enclosed by brackets (as in the example above). The expression must contain an 
     equal ("=") sign.
     
-    Symbol usage:
+    Symbol usage for an input:
     
-    Symbol      Operator
-    '*'         'AND'
-    '^'         'AND'
-    '+'         'OR'
-    'v'         'OR'
-    "'"         'NOT'
-    '~'         'NOT'
-    '%'         'XOR'
-    '|'         'NAND'
-    '-'         'NOR'
+    Input Symbol        Operator
+    '*'                 'AND'
+    '^'                 'AND'
+    '+'                 'OR'
+    'v'                 'OR'
+    "'"                 'NOT'
+    '~'                 'NOT'
+    '%'                 'XOR'
+    '|'                 'NAND'
+    '-'                 'NOR'
     
-    All symbols can be used interchangeably in a function definition.
+    All symbols can be used interchangeably in a function definition. For example:
+    "f(a, b) = a^b*a + ~a*b'"
+    is a valid function definition.
+    
+    To create a Boolean function, run "boolfunc.py" to initiate the Boolean Function (BF) class.
+    Example:
+    "new_function = BF("f(a, b) = a+b")"
+    will create the function 'a+b'. There are various methods you can use on this as part of the BF class.
     """
     
     position = -1
