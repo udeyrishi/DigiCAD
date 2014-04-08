@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """
 Source for the GUI outline:
 http://www.tkdocs.com/tutorial/firstexample.html
