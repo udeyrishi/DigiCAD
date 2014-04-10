@@ -10,12 +10,15 @@ We have created a program that can evaluate, manipulate, and simplify Boolean fu
 Given a Boolean function as an input (as a string), our program will parse the string and
 create a Boolean Function object from it. This object has a variety of methods that can be used
 to analyze and/or simplify the function into different forms. The simplification is done using
-the Quine-McCluskey algorithm.
+the Quine-McCluskey algorithm. 
+
+*Our program is built in Python 3.3*. The command line is compatible with Python 3.4 as well. 
+Our program may or may not be fully compatible with Python 3.2.
 
 
 
 USAGE:
-To run our program, you can use either the GUI or the command-line interface. *The GUI has several
+To run our program, you can use either the GUI or the command-line interface. *The GUI has some minor
 glitches*, but is useful for quickly demostrating functionality. The command-line is more stable.
 To test the functions individually, import boolfunc.py into a python3 command line (or iPython), and
 all of the functions from all files will be imported. To create a Boolean function, you can use:
@@ -28,12 +31,19 @@ manipulate the function. *The syntax for function definitions is outlined in the
 INSTALLATION:
 
 GUI:
-1. The GUI requires no installation. Simply run gui.py using python3 to open the GUI, and use either one
-   of the text boxes to input a function. The formatting/notation used in functions is described in detail 
-   in the docstrings of strings.py.
+The GUI requires no installation. Simply run gui.py using python3 to open the GUI, and use either one
+of the text boxes to input a function. The formatting/notation used in functions is described in detail 
+in the docstrings of strings.py.
 
 Command-Line:
-1. <UDEY, WRITE THE INSTALLATION INSTRUCTIONS FOR THE COMMAND LINE HERE>
+The command line can also be run using python3, but it is recommended that the files cli.py and 
+gui.py are made executable (using chmod a+x <filename>), and that the directory DigiCAD is added to the 
+system path in ~/.bashrc. Not doing so may cause minor issues (inability to locate the help documentation 
+and gui.py files). Functionality in the CLI will be the same either way.
+
+The CLI requires interaction with the terminal (for colours), and system shell (for opening files and launching other
+Python scripts). This is tested on Linux (so should work on any UNIX platform). It should work on any OS after adapting
+the shell commands appropriately. It is compatible with the Ubuntu VMs that we use in CMPUT 275.
 
 
 
@@ -53,7 +63,8 @@ In gui.py:
 
 In cli.py:
 --> The command line uses cli_helper.py for the majority of its functionality. It has extensive help 
-    documentation in cli_help.txt. Refer to cli_help.txt for help in using the command line.
+    documentation in cli_help.txt. Refer to cli_help.txt for help in using the command line, or use
+    the 'help' command in the CLI itself.
 
 
 

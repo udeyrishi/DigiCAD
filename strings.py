@@ -9,7 +9,7 @@ def parse(s):
     The user can input a Boolean expression using different symbols for 'AND', 'OR',
     etc. (listed below), but the output will only use one set of symbols. 
     
-    The default set of symbols used in the output are:
+    The default set of symbols used IN THE OUTPUT are:
     
     Output Symbol       Operator
     '*'                 'AND'
@@ -21,7 +21,7 @@ def parse(s):
 
     Expressions are expected to be in the form:
         
-    "f(a, b, c, d) = (a' + ~b*(c v d))'*(b^c&d' - a | b)...."etc.
+    "f(a, b, c, d) = (a' + ~b*(c v d))'*(b^c%d' - a | b)...."etc.
 
     "f" can be any name. The variable names can be anything, but brackets, spaces, dots, *, 
     /, \, ^, v, ', ~, &, +, |, %, and - symbols will be removed. (Basically, variables should be
@@ -30,7 +30,7 @@ def parse(s):
     must be enclosed by brackets (as in the example above). The expression must contain an 
     equal ("=") sign.
     
-    Symbol usage for an input:
+    Symbol usage for an INPUT:
     
     Input Symbol        Operator
     '*'                 'AND'
@@ -46,6 +46,8 @@ def parse(s):
     All symbols can be used interchangeably in a function definition. For example:
     "f(a, b) = a^b*a + ~a*b'"
     is a valid function definition.
+    
+    parse("f(a, b) = a^b*a + ~a*b'") is valid usage of the function parse().
     
     To create a Boolean function, run "boolfunc.py" to initiate the Boolean Function (BF) class.
     Example:
@@ -104,8 +106,7 @@ def parse(s):
     function = function.replace('^', '*')
     function = function.replace('%', '^')
     function = function.replace('v', '+')
-    function = special_replace(function, "'", ' not ')
-    function = function.replace(' not ', "~")
+    function = special_replace(function, "'", '~')
     
     # Find all 'NOR', 'NAND, and 'XOR symbols and enclose those terms 
     # with brackets. Walk through the function one character at a time 
@@ -114,13 +115,15 @@ def parse(s):
     while pos < len(function):
         if function[pos] == '^':
             function = enclose(function, pos+1)
-            print(function)
             function = enclose(function, pos)
             pos += 1
         elif function[pos] in {'-', '|'}:
             function = enclose(function, pos)
             pos += 1
         pos += 1    
+
+    # Delete unnecessary brackets in the function.
+    function = delete_brackets(function)
 
     return variables, function
 
@@ -212,7 +215,8 @@ def special_replace(s, c, replacor):
     
     # Search for the indices of c in s.
     character_indices = find_all(s, c)
-        
+    bracket_counter = 0
+    
     # If the list of indices is not empty, iterate through the list.
     # For each character, check if it is preceded by a bracket. If so, 
     # find its corresponding bracket (backwards) and move the character
@@ -221,9 +225,15 @@ def special_replace(s, c, replacor):
         for character in character_indices:
             if s[character-1] == ')':
                 left_bracket = character - 2
-                # Find the left bracket.
-                while s[left_bracket] != '(':
+                
+                # Find the left bracket corresponding to the current right bracket.
+                while s[left_bracket] != '(' or bracket_counter:
+                    if s[left_bracket] == ')':
+                        bracket_counter += 1
+                    elif s[left_bracket] == '(':
+                        bracket_counter -= 1
                     left_bracket -= 1
+                    
                 # Create the new string.
                 s = s[:left_bracket] + c + s[left_bracket:character] + s[character+1:]
                
@@ -329,6 +339,115 @@ def enclose(f, pos, left_enclosure='(', right_enclosure=')'):
         
     return f
     
+ 
+
+def delete_brackets(s):
+    """
+    Returns a copy of the string s with unnecessary brackets removed.
+    Unnecessary brackets are layers of brackets that enclose the same term.
+    For example:
+    
+    >>> s = '(((a)))'
+    >>> delete_brackets(s)
+    '(a)'
+    
+    >>> s = 'a + ((b + c)) + ((~c))'
+    >>> delete_brackets(s)
+    'a + (b + c) + (~c)'
+    """
+    
+    # Index keeps track of the position in the string.
+    # removal_list is a list of bracket characters that need to be removed.
+    # Decrement is an offset used when removing the brackets.
+    index = 0
+    removal_list = []
+    decrement = 0
+    
+    # Walk through each character in s and look for left bracket characters. 
+    # If two of them are side-by-side, AND the two corresonding right brackets
+    # are side-by-side, add the pair to the list of brackets that need to be removed.
+    for char in s:
+        if char == '(' and s[index+1] == '(':
+            if (corresponding_bracket(s, index) - 1) == corresponding_bracket(s, index+1):
+                removal_list.append(index)
+                removal_list.append(corresponding_bracket(s, index))
+        index += 1
+    
+    # Sort the removal_list. This way, the list can be iterated from left to right.
+    removal_list.sort()
+    
+    # Remove brackets one at a time. Each time a bracket is removed, the index of
+    # subsequent brackets decrease by one (since the size of s has decreased).
+    for index in removal_list:
+        s = remove(s, index-decrement)
+        decrement += 1
+        
+    return s
+    
+    
+
+def corresponding_bracket(s, bracket):
+    """
+    Given the index of a left or right bracket character, return the
+    index of the correspoding bracket character in s. Assumes that all
+    brackets are enclosed properly. Returns None if the index of a 
+    bracket is not given.
+    
+    Examples:
+    
+    >>> s = '(((a)))'
+    >>> correspoding_bracket(s, 0)
+    6
+    
+    >>> s = '(((a)))'
+    >>> correspoding_bracket(s, 6)
+    0
+    
+    >>> s = '(((a)))'
+    >>> correspoding_bracket(s, 5)
+    1
+    
+    >>> s = '(((a)))'
+    >>> correspoding_bracket(s, 3)
+    None
+    
+    >>> s = 'a + ((b + c)) + ((~c))'
+    >>> correspoding_bracket(s, 5)
+    11
+    """
+    
+    # If the given index in s is not an index of a bracket character, return None.
+    if s[bracket] != '(' and s[bracket] != ')':
+        return None
+        
+    bracket_counter = 0    
+        
+    # If the character is a left bracket, find the corresponding right bracket
+    # by searching forward in the string. If another left bracket is found, ignore
+    # the next right bracket.
+    if s[bracket] == '(':
+        bracket += 1
+        while s[bracket] != ')' or bracket_counter:
+            if s[bracket] == '(':
+                bracket_counter += 1
+            elif s[bracket] == ')':
+                bracket_counter -= 1
+            bracket += 1    
+    
+    # If the character is a right bracket, find the corresponding left bracket
+    # by searching backward in the string. If another right bracket is found, ignore
+    # the next left bracket.    
+    elif s[bracket] == ')':
+        bracket -= 1
+        while s[bracket] != '(' or bracket_counter:
+            if s[bracket] == ')':
+                bracket_counter += 1
+            elif s[bracket] == '(':
+                bracket_counter -= 1
+            bracket -= 1    
+            
+    return bracket        
+    
     
     
 def insert(s, c, pos):
@@ -373,6 +492,41 @@ def insert(s, c, pos):
     # If the position is not within these bounds, return None.
     else:
         return None
+    
+    
+
+def remove(s, i):
+    """
+    Returns the string s with the character at index i removed.
+    
+    Examples:
+    
+    >>> s = '12304'
+    >>> remove(s, 3)
+    '1234'
+    
+    >>> s = '0123'
+    >>> remove(s, 0)
+    '123'
+
+    >>> s = '0123'
+    >>> remove(s, 3)
+    '012'
+    
+    >>> s = '0123'
+    >>> remove(s, -1)
+    '0123'
+    
+    >>> s = '0123'
+    >>> remove(s, 4)
+    '0123'
+    """
+    
+    # If the index is out of range, return the original string.
+    if i < 0 or i >= len(s):
+        return s
+    
+    return s[:i] + s[i+1:]
     
     
     

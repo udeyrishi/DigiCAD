@@ -1,27 +1,36 @@
 #!/usr/bin/python3
 
 """
+A GUI for Boolean functions; a Boolean function toolbox. It contains some minor glitches, but it
+demonstrates many of the methods in the Boolean function class. There is some functionality 
+missing from this GUI, such as printing out truth tables and comparing functions to each other.
+
+If you input a function with more than 5 variables, there the list of minterms and/or maxterms will 
+become long, and the GUI window will stretch. You may not be able to clear the text; if this occurs,
+simply exit the GUI and re-enter.
+
+After every input, the output function is stored in the clipboard. The restore button will restore
+previous functions (to the clipboard) that were used in the GUI in that particular session.
+
+Using the GUI, you can do the following with a Boolean function:
+-Find the minterms (numerical values where the function is true)
+-Find the maxterms (numerical values where the function is false)
+-Find the minterm expansion
+-Find the maxterm expansion
+-Find the simplest expression in SOP form
+-Find the negation of the function
+-Manipulate two functions at the same time (there are two input boxes)
+-Restore previous functions
+
+Examples (these can be typed directly into the input boxes):
+
+--> a+b
+--> f(a, b) = a + b
+--> a % b
+--> a * b + c | d
+
 Source for the GUI outline:
 http://www.tkdocs.com/tutorial/firstexample.html
-
--as an added bonus, outputs are saved to the clipboard
-
--things i need:
-bf_not
-display
-max_expand
-min_expand
-maxterms
-minterms
-min_sop
-
-substitue
-nand (with other)
-nor (with other)
-truthtable....
-
-
-variables
 """
 
 # Import modules from Tkinter and the Boolean Function module.
@@ -31,7 +40,7 @@ from boolfunc import *
 
 # Define the Tk instance, the window size, and the window title.
 root = Tk()
-root.geometry("1500x700+300+300")
+root.geometry("1200x500+300+300")
 root.title("Boolean Function Toolbox")
 root.clipboard_clear()
 
@@ -149,9 +158,9 @@ def calculate(side=None, mode=None, clear=0):
             variable_list[side][mode].set("Index Error! Please try again. Otherwise, reset program.")
 
         
-user_entry0 = ttk.Entry(mainframe, width=50, textvariable=user_input0)
+user_entry0 = ttk.Entry(mainframe, width=30, textvariable=user_input0)
 user_entry0.grid(column=2, row=1, sticky=(W, E))
-user_entry1 = ttk.Entry(mainframe, width=50, textvariable=user_input1)
+user_entry1 = ttk.Entry(mainframe, width=30, textvariable=user_input1)
 user_entry1.grid(column=5, row=1, sticky=(W, E))
 
 

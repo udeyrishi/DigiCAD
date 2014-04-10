@@ -8,9 +8,10 @@ def make_table(expression):
     
     make_table returns a truth table; that is, a dictionary mapping strings of
     possible values for the variables to the value of the function using those
-    values. For example:
+    values. Refer to the docstrings in strings.py for the correct input format.
+    For example:
     
-    >>> make_table("f(a, b) = a ^ b")
+    >>> make_table("f(a, b) = a % b")
     {'00': False, '01': True, '10': True, '11': False}
 
     >>> make_table("f(a, b) = a * b")
