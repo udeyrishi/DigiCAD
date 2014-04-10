@@ -14,6 +14,8 @@ the tool.
 
 For best experience, make this and gui.py executable by "chmod a+x <filename>".
 Then add it to your system path in ~/.bashrc.
+
+Developed by: Udey Rishi & Raghav Vamaraju, 2014
 """
 
 import cli_helper

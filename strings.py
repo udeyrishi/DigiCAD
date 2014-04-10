@@ -1,3 +1,9 @@
+"""
+The string parsing module. Contains functions used by boolfunc for helping 
+recognise the user input.
+Developed by: Udey Rishi & Raghav Vamaraju, 2014
+"""
+
 def parse(s):
     """
     Function to parse a string containing a Boolean expression and divide it

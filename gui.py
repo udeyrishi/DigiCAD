@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+# Currently in beta stage
 """
 A GUI for Boolean functions; a Boolean function toolbox. It contains some minor glitches, but it
 demonstrates many of the methods in the Boolean function class. There is some functionality 
@@ -31,6 +31,8 @@ Examples (these can be typed directly into the input boxes):
 
 Source for the GUI outline:
 http://www.tkdocs.com/tutorial/firstexample.html
+
+Developed by: Udey Rishi & Raghav Vamaraju, 2014
 """
 
 # Import modules from Tkinter and the Boolean Function module.

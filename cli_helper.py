@@ -1,3 +1,8 @@
+"""
+This is the helper file for cli.py. See cli.py or Readme.txt for details.
+Developed by: Udey Rishi & Raghav Vamaraju, 2014
+"""
+
 from boolfunc import *
 import sys, copy, os
 
