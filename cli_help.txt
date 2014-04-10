@@ -1,5 +1,5 @@
-Welcome to the Help guide for DigiCAD!
-
+Welcome to the Help guide for DigiCAD! This is not the final version, and still
+requires some details. 
 General syntax: All the commands use the same format: 
 <command name> <argument1> <argument2>....
 
@@ -16,11 +16,11 @@ interpreter will try to read it as 1 command/variable name/operator.
 Development Notes:
 ------------------
 The current version does not have the capability of piping the outputs
-directly to another command. However, all the calculated values are 
-directly stored in the workspace. (These calues can be deleted, see 
-command del). For complex calculations, do the processing step by step,
-involving workspace storage at each step.
-
+directly to another command. However, all the calculated values are directly stored 
+in the workspace. (These calc values can be deleted, see command del). For complex 
+calculations, do the processing step by step, involving workspace storage at each 
+step. Combining multiple BFs from workspace is allowed, but is not done using def.
+Just go BF1 <operator> BF2, or use a command
 
 Commands:
 
@@ -64,9 +64,9 @@ This command works only in Linux/UNIX in the current version of DigiCAD.
 
 def : []
 --------
-Defines a new Boolean Function. The arguments should technically be 1, 
-but due to allowed spaces in BF representation, argument number is 
-undeterminate.
+Defines a new Boolean Function using Boolean vars. The arguments is undeterminate/
+Used only for creating a new BF using variables; for combining other BFs, just 
+use BF1 <operator> BF2.
 
 e.g.: def f(a,b) = a + b
 or def a + b
@@ -92,10 +92,10 @@ Identical to expression, except displays the entire BF in its proper
 format.
 
 
-del : [1]
+del : [0,1]
 ---------
-Deletes the function from the workspace.
-
+Deletes the function from the workspace, if an argument is passed. Else empties
+the entire workspace.
 e.g. del f
 
 
@@ -237,3 +237,10 @@ Returns the binary form notation of the number.
 
 Arg1 = The number, Arg2, = The number of LSBs to be considered
 Arg3 = Base of the given number (10 Default)
+
+rename : [2]
+------------
+Renames the BF in workspace.
+
+Arg1 = current name in workspace, Arg2 = New name in workspace
+

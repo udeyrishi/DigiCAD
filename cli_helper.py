@@ -3,7 +3,7 @@ import sys, copy, os
 
 class bcolors:
     """
-    The class for generating colour text in terminal. 
+    The class for generating colour text in the Linux terminal. 
 
     Source:
     http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-
@@ -24,7 +24,7 @@ class bcolors:
         self.FAIL = ''
         self.ENDC = ''
 
-# Defining the colours for ease of reference
+# For ease of reference
 green = bcolors.OKGREEN
 head = bcolors.HEADER 
 blue = bcolors.OKBLUE 
@@ -45,9 +45,9 @@ def printc(text, colour = output, term = "\n"):
 
 def find_name_hard(function):
     """
-    Looks for a name in the BF format: f = <expression>
+    Looks for a name in the partial proper BF format: f = <expression>.
+    Adds to the functionality of "find_name" in strings.py.
     """
-
     rv = ""
     for i in range(len(function)):
         if function[i] != "=": 
@@ -58,30 +58,33 @@ def find_name_hard(function):
 def execute(command, args):
     """
     Executes the command mentioned. Passes the args as the argument
-    to the command. The command must be in command_list. 
+    to the command. The command must be in command_list, and the # of args in 
+    the space seperated argument list should be in the arg_len. 
     """
-    func = command_list[command]
+    func = command_list[command] 
+
     if len(args.split()) not in arg_len[command] and \
-       command not in ["def", "equal", "or", "and", "xor", "nor", "nand"]:
-        # def and equal are exceptional. The length of arguments can't be determined.
+        command not in ["def", "equal", "or", "and", "xor", "nor", "nand"]:
+        # These commands don't have a fixed acceptable arguement length 
         printc("Invalid Syntax. Too many or too few arguments.", fail)
+
     elif len(args) > 0:
-        #print(args[1])
         func(args)
+    
     else:
         func()
 
 def operator(args):
     """
-    Called when there is a possibility that this might be a combination
-    of operators acting on a BF. Tries to simplifify it. 
+    Called when there is a possibility that args might be a combination
+    of operators acting on BFs. Tries to simplifify it. 
     """
-    check = False
+    check = False # Check if the operator is "=="
     for i in range(len(args)):
         if args[i] == "=" :
             if i != 0 and args[i-1] == "=":
                     check = True 
-                    j = i
+                    j = i # The index of the "==" operator
 
     if check: equal(args, j) # equality operator, a special case, is called
     else:
@@ -101,9 +104,11 @@ def operator(args):
 
         create_BF(new_exp)
 
-# DigiCAD Commands:
+# DigiCAD functions:
 
-# Basic DigiCAD tools
+# Basic DigiCAD tools. These are the python functions called by the DigiCAD 
+# commands. THESE ARE NOT THE ACTUAL DIGICAD COMMANDS! See the mapping in 
+# command_list
 def cls():  
     """
     Clears the terminal screen the terminal screen
@@ -114,7 +119,7 @@ def cls():
 
 def initialise():
     """
-    Prints welcome message
+    Prints welcome flash message.
     """
 
     printc(
@@ -136,7 +141,7 @@ run the graphical user interface.
 def help_dc(args = None):
     """
     Calling it without any arguments will display the help of all the methods.
-    Calling it with a command name gives the help regaring it.
+    Calling it with a command name gives the help regarding it.
     """
     if args:
         try:
@@ -167,7 +172,7 @@ def gui():
     http://stackoverflow.com/questions/3781851/run-a-python-script-from-another-
     python-script-passing-in-args
     """
-    os.system("gui.py")
+    os.system("python3 ./gui.py")
 
 # Basic BF tools        
 def create_BF(function):
@@ -179,12 +184,15 @@ def create_BF(function):
         symbols = ['*', '^', '%', '+', '-', 'v', "'", '~', "|"]
 
         test = find_name(function) # Check if user gave a proper name
-        if not test: test = find_name_hard(function) # Check if partial name is present
+        if not test: 
+            test = find_name_hard(function) # Check if partial name is present
 
-        # To prevent parsing in reserved symbols        
+        # To prevent parsing-in reserved symbols        
         if test:
             for i in test:
                 if i in symbols:
+                    # A reserved letter was parsed in as the BF name. 
+                    # Over-ride the user provided name.
                     test = None
                     break
 
@@ -226,25 +234,53 @@ def create_BF(function):
     except:
         printc("Please check the syntax.", fail)
 
-
-def del_bf(function):
+def rename(arguments):
     """
-    Removes the BF from the workspace.
+    Renames a function in the workspace.
     """
-    function = function.strip()
-    if function not in _workspace:
-        printc("%s is not a BF in the workspace" %function, fail)
+    old, new = arguments.split()
+    if old in _workspace:
+        # BF exists in workspace
+        temp = copy.deepcopy(_workspace[old])
+        temp._name = new
+        _workspace[new] = temp
+        _workspace.pop(old)
+        printc(_workspace[new]) # For visual confirmation
 
     else:
-        printc("Are you sure you want to remove %s from the current workspace? (Y/N)" \
-               %function, fail, " ")
+        printc("'%s' is not a BF in the current workspace!" %old, fail)
+
+def del_bf(function = None):
+    """
+    Removes the BF from the workspace. If no argument is passed, empties the 
+    workspace.
+    """
+    if function:
+        # The user gave a specific function to be deleted
+        function = function.strip()
+        if function not in _workspace:
+            # Invalid function
+            printc("%s is not a BF in the workspace" %function, fail)
+
+        else:
+            printc("Are you sure you want to remove %s from the current workspace? (Y/N)" \
+                       %function, fail, " ")
+            decision = input()
+            if decision.lower() == "y":
+                _workspace.pop(function)
+                printc("%s successfully removed from the workspace" %function, blue)
+            else:
+                printc("Nothing deleted", blue)
+
+    else:
+        printc("Are you sure you want to empty the current workspace? (Y/N)", \
+                       fail, " ")
         decision = input()
         if decision.lower() == "y":
-            _workspace.pop(function)
-            printc("%s successfully removed from the workspace" %function, blue)
+            _workspace.clear()
+            printc("Workspace emptied!", blue)
         else:
-            printc("Nothing deleted", blue)
-
+            printc("Nothing deleted", blue)        
 
 def expression(name):
     """
@@ -263,6 +299,8 @@ def disp(name):
     """
     printc(_workspace[name])
                 
+# The following functions connect CLI with the boolfunc module
+
 # BF properties
 def minterms(name):
     """
@@ -408,7 +446,7 @@ def equal(args, i = None):
 
 def standard_op(args, symbol):
     """
-    The template function for operators or, and, xor, nor, not, and nand.
+    The template function for operators or, and, xor, nor, and nand.
     """
     functions = args.split()
     bf = "" # The string Boolean function parsed
@@ -489,6 +527,7 @@ def min_exp(function):
     Returns the minterm expansion of the function.
     """
     if function.split()[0] in _workspace:
+        # Find the BF, and add it to workspace
         rv = _workspace[function.split()[0]].min_expand()
         create_BF(rv._print())
 
@@ -500,6 +539,7 @@ def max_exp(function):
     Returns the maxterm expansion of the function.
     """
     if function.split()[0] in _workspace:
+        # Find the BF, and add it to workspace
         rv = _workspace[function.split()[0]].max_expand()
         create_BF(rv._print())
 
@@ -528,6 +568,7 @@ def minimise(function):
     Returns the minimised sop form of the function.
     """
     if function.split()[0] in _workspace:
+        # Find the min BF, and add it to the workspace
         rv = _workspace[function.split()[0]].min_sop()
         create_BF(rv._print())
 
@@ -542,7 +583,7 @@ def num_ones(arg):
     arg1 = number, arg2 = base (default 10)
     """
     arg_list = arg.split()
-    if len(arg_list) < 2: arg_list.append("10")
+    if len(arg_list) < 2: arg_list.append("10") # Use default base 10
     
     try:
         number = arg_list[0]
@@ -558,7 +599,7 @@ def num_zeros(arg):
     arg1 = number, arg2 = bits, arg3 = base (default 10)
     """
     arg_list = arg.split()
-    if len(arg_list) < 3: arg_list.append("10")
+    if len(arg_list) < 3: arg_list.append("10") # Use default base 10
     try:
         number = arg_list[0]
         bits = arg_list[1]
@@ -575,7 +616,7 @@ def binary(arg):
     arg1 = number, arg2 = # of bits, arg3 = base (default 10)
     """
     arg_list = arg.split()
-    if len(arg_list) < 3: arg_list.append("10")
+    if len(arg_list) < 3: arg_list.append("10") # Use default base 10
     try:
         number = arg_list[0]
         bits = arg_list[1]
@@ -584,7 +625,7 @@ def binary(arg):
     except ValueError:
         printc("Value is not a number!", fail)       
          
-#DigiCAD Variables:
+# DigiCAD CLI Variables:
 
 # Contains all the commands as objects
 command_list = { # Basic DigiCAD commands
@@ -595,6 +636,7 @@ command_list = { # Basic DigiCAD commands
                 'gui' : gui,
                 # Basic BF tools
                 'def' : create_BF, 
+                'rename' : rename,
                 'expression' : expression, 
                 'display_BF' : disp,
                 'del' : del_bf,
@@ -621,7 +663,7 @@ command_list = { # Basic DigiCAD commands
                 'minimise' : minimise, 
                 'num_ones' : num_ones, 
                 'num_zeros' : num_zeros,
-                'binary' : binary,
+                'binary' : binary
                 } 
 
 # Stores how many arguments a command expects
@@ -632,9 +674,10 @@ arg_len = {
             'workspace' : [0],
             'gui' : [0],
             'def' : [], # don't care 
+            'rename' : [2],
             'expression' : [1], 
             'display_BF' : [1],
-            'del' : [1],
+            'del' : [0,1],
             'minterms' : [1],
             'maxterms' : [1], 
             'mintermsl' : [1],
@@ -655,7 +698,7 @@ arg_len = {
             'minimise' : [1], 
             'num_ones' : [1,2], 
             'num_zeros' : [2,3],
-            'binary' : [2,3],
+            'binary' : [2,3]
         }
 
 # Contains the line numbers of the help documentation
@@ -666,6 +709,7 @@ help_dict = {
             'workspace' : (52, 54),
             'gui' : (57, 62),
             'def' : (65, 77),
+            'rename' : (241, 245),
             'expression' : (80, 86), 
             'display_BF' : (89,92),
             'del' : (95,99),
@@ -689,5 +733,5 @@ help_dict = {
             'minimise' : (210,216), 
             'num_ones' : (219,223), 
             'num_zeros' : (226,231),
-            'binary' : (234,239),
+            'binary' : (234,239)
         }

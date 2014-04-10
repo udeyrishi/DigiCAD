@@ -1,57 +1,81 @@
 """
-The Boolean Function module for the DigiCAD.
-Runs the under-the-hood Boolean algebra required by it.
+The Boolean Function (BF) module.
+Provides tools to store and manipulate BFs. 
 
-Developed by: Udey Rishi
-
-Please note that the test cases might state that the test failed. The exact 
-result depends on how python interpreter decides to store dictionaries. In case
-test fails, check the 'expected' vs. 'got' values to verify manually.
+Please note that some of the test cases in this module might fail. The exact test
+result depends on how Python interpreter decides to store dictionaries. In case
+test(s) fails, check the 'expected' vs. 'got' values to verify manually.
 """
 
 from truth_tables import *
-import copy, math, pdb
+import copy, math
 
 class InvalidBooleanFunctionError(Exception):
+    """
+    Handles the exceptions conncerning Invalid BFs.
+    """
     pass
 
 class BF:
     """
-    Creates a boolean function 
+    The BF class. Stores the details of a BF and provides numerous methods to do
+    computations on them. 
+
+    Can take the BF in 3 ways:
+    1. Expression: e.g. BF("a+b")
+    2. Partial Proper: e.g. BF("f = a+b"), or BF("a+b", "f")
+    3. Proper: e.g. BF("f(a,b) = a+b")
+
+    The BF needs a name assigned to it in multiple use cases; the proper and partial
+    proper ways ensure that the user assigned name is assigned to the BF. In the
+    case where just the expression is passed in, a default name "f" is assigned.
+    The proper way is more specific than partial proper, as it also specifies
+    the variables that user intended; any contradiction will lead to error. 
+    But this of course, is optional. The parsing engine has the capability to 
+    recognise the variables, which is pretty accurate in its prediction in mose
+    scenarios.
+
+    The spaces will be adjusted properly. This module uses the truth-table 
+    generating engine (truth_tables.py), which relies on its own parsing engine.
+    As a general rule, brackets are given the highest priority. For other priority
+    details, see strings.py.   
     """
 
     def __init__(self, function, name = 'f'):
 
-        # This name is useless if the function is in proper form
-        # If not in proper form, this name will be applied
+        # Converts the function to its proper version using the best estimation
         function = proper(function, name)
 
         # After appropriate name is set up, store this name as an attribute
         self._name = find_name(function)
 
-        # Parsing out the list of variables in the expression and creating the
-        # truth table
-
-        #variables, table, symbols = make_table(function)
+        # Parsing out the list of variables and expression, and creating the
+        # truth table (tt) from the proper function
         variables, table, expression = make_table(function)
 
         variables.sort()
+
+        # Reading out the minterms and maxterms from the tt
         minterms = [i for i in table if table[i]]
         maxterms = [i for i in table if not table[i]]
 
-        # Store the vars, TT, user preferred symbols and the expression
-        #self._expression = pull_function(function)
+        # Store the vars, TT, and the expression as attributes of the BF
         self._expression = expression
         self._variables = variables
         self._table = table
-        #self._symbols = symbols
 
-        # Storing minterms hashed with the number of 1s
+        # Storing minterms hashed with the number of 1s, and maxterms hashed 
+        # with the number of 0s
+        # This is done as minterms and maxterms are needed in a majority of
+        # computations, and storing them will save time
+
+        # The minterms/maxterm are in the form of bit-strings. Convert them into 
+        # their numerical versions for storing for performing Boolean computations
         self._minterms = {}
 
-        # Converting the string buts into numerical bit lists
         minterms2 = list()
-
+        
+        # Converting the string buts into numerical bit lists
         for i in minterms:
             minterms2.append(int(i, 2))
 
@@ -61,10 +85,9 @@ class BF:
             else:
                 self._minterms[find_ones(i)] = [i]
 
-        # Storing minterms hashed with the number of 1s
+        # Do the same for the maxterms, just hashed with # of zeroes instead
         self._maxterms = {}
 
-        # Move this functionality directly into minterm generation later
         maxterms2 = list()
 
         for i in maxterms:
@@ -77,73 +100,115 @@ class BF:
                 self._maxterms[find_zeros(i, len(variables))] = [i]
 
 
-        # Storing simplified expressions as a cache
+        # Storing simplified expressions as a cache. This will be filled the
+        # first time the appropriate methods are called
         self._min_exp = None
         self._max_exp = None
         self._min_sop = None
         self._min_pos = None
 
     def expression(self):
-        return copy.deepcopy(self._expression)
+        """
+        Returns the BF expression. 
+        """
+        return self._expression
 
     def minterms(self):
+        """
+        Returns a sorted list of the minterms.
+        """
         rv = []
         for i in self._minterms.values():
             rv += i 
         rv.sort()
-        return copy.deepcopy(rv)
+        return copy.deepcopy(rv) # Lists are mutable
 
     def mintermsl(self):
-        return copy.deepcopy(self._minterms)
+        """
+        Returns a long version of the minterms, mapping the # of 1's in it to
+        the actual minterm.
+        """
+        return copy.deepcopy(self._minterms) # Dicts are mutable
 
     def maxterms(self):
+        """
+        Returns a sorted list of the maxterms.
+        """
         rv = []
         for i in self._maxterms.values():
             rv += i 
         rv.sort()
-        return copy.deepcopy(rv)
+        return copy.deepcopy(rv) # Lists are mutable
 
     def maxtermsl(self):
-        return copy.deepcopy(self._maxterms)
+        """
+        Returns a long version of the maxterms, mapping the # of 0's in it to
+        the actual minterm.
+        """ 
+        return copy.deepcopy(self._maxterms) # Dicts are mutable
 
     def variables(self):
-        return copy.deepcopy(self._variables)
+        """
+        Returns a copy of the variables in the BF.
+        """
+        return copy.deepcopy(self._variables) # Lists are mutable
 
     def _varstring(self):
-            """
-            Helper method that converts the list of variables to a string that 
-            can be used in the outputs of any method that generates another 
-            BF. 
-            """
-            variables = ""
-            for i in self.variables():
-                variables += i + ", "
-            return variables[:-2]
+        """
+        Helper method that converts the list of variables to a string.  
+        Can be used in the outputs of methods that needs to generate another 
+        BF. 
+        """
+        variables = ""
+        for i in self.variables():
+            variables += i + ", "
+        return variables[:-2] # Remove the extra ", " at the end
 
     def truthtable(self):
+        """
+        Returns the BF's tt.
+        """
         return copy.deepcopy(self._table)
 
     def name(self):
+        """
+        Returns the name of the BF.
+        """
         return copy.deepcopy(self._name)
 
     def _print(self):
+        """
+        Returns a string representing the entire BF in the proper form. 
+        Helper method for other methods.
+        NOT the same as just calling the BF instance, as that returns another BF
+        object, not a string. 
+        """
         return ("%s(%s) = %s" %(self._name, self._varstring(), self.expression()))       
+
+    # The following two are just used for making object interaction user firendly
     def __str__(self):
         return ("%s(%s) = %s" %(self._name, self._varstring(), self.expression()))
 
     def __repr__(self):
         return ("%s(%s) = %s" %(self._name, self._varstring(), self.expression()))
 
+    
     def __eq__(self, func):
+        """
+        Equates the 2 BFs
+        """
         try:
             return self.truthtable() == func.truthtable()
         except AttributeError:
             raise InvalidBooleanFunctionError("Object isn't a Boolean Function!")
 
     
-    # Operators to combine boolean functions
+    # Operators to combine boolean functions:
     
     def __add__(self, other):
+        """
+        Finds the OR of the BFs
+        """
         try:
             return BF("(%s) + (%s)" %(self.expression(), other.expression()), \
                       "%s_OR_%s" %(self.name(), other.name()))
@@ -152,6 +217,9 @@ class BF:
             raise InvalidBooleanFunctionError("The object is not a Boolean Function")
 
     def __radd__(self, other):
+        """
+        Finds the OR of the BFs
+        """
         try:
             return BF("(%s) + (%s)" %(other.expression(), self.expression()), \
                       "%s_OR_%s" %(other.name(), self.name()))
@@ -161,6 +229,9 @@ class BF:
         
 
     def __mul__(self, other):
+        """
+        Finds the AND of the BFs
+        """
         try:
             return BF("(%s) * (%s)" %(self.expression(), other.expression()), \
                       "%s_AND_%s" %(self.name(), other.name()))
@@ -171,6 +242,9 @@ class BF:
 
     
     def __rmul__(self, other):
+        """
+        Finds the AND of the BFs
+        """
         try:
             return BF("(%s) * (%s)" %(other.expression(), self.expression()), \
                       "%s_AND_%s" %(other.name(), self.name()))
@@ -180,6 +254,9 @@ class BF:
         
 
     def __xor__(self, other):
+        """
+        Finds the XOR of the BFs
+        """
         try:
             return BF("(%s) % (%s)" %(self.expression(), other.expression()), \
                       "%s_XOR_%s" %(self.name(), other.name()))
@@ -188,6 +265,9 @@ class BF:
             raise InvalidBooleanFunctionError("The object is not a Boolean Function")
         
     def __rxor__(self, other):
+        """
+        Finds the XOR of the BFs
+        """
         try:
             return BF("(%s) % (%s)" %(other.expression(), self.expression()), \
                       "%s_XOR_%s" %(other.name(), self.name()))
@@ -250,12 +330,14 @@ class BF:
                 for i in range(len(self.variables())):
                     if term != " + " and term != "": term += "*"
                     if int(minterm[i]):
+                        # It should be a non-complemented variable
                         term += self.variables()[i]
                     else:
+                        # It should be a complemented variable
                         term += "~" + self.variables()[i]
                 rv += term
             
-            if rv == "": rv = "0"
+            if rv == "": rv = "0" # Special case: no minterms
 
             self._min_exp = rv # Cache the calculated expression
         variables = self._varstring()
@@ -266,7 +348,7 @@ class BF:
         rv2 = copy.deepcopy(self)
         rv2._name = "%s_min_expand" %self.name()
         rv2._expression = "%s" %rv
-        return rv2        
+        return rv2
                     
     def max_expand(self):
         """
@@ -292,12 +374,14 @@ class BF:
                 for i in range(len(self.variables())):
                     if factor != " * (" and factor != "(": factor += " + "
                     if int(maxterm[i]):
+                        # Variable should be complemented
                         factor += "~" + self.variables()[i]
                     else:
+                        # Variable should be in original form
                         factor += self.variables()[i]
                 rv += factor + ")"
             
-            if rv == "": rv = "1"
+            if rv == "": rv = "1" # Special case: No maxterms
 
             self._max_exp = rv # Caching the calculated value
         variables = self._varstring()
@@ -312,8 +396,8 @@ class BF:
     
     def sub(self, values):
         """
-        Plus in the values in the BF and returns True/False. values in a string
-        containing the values of the variables. (e.g. "1010")
+        Plugs in the values in the BF and returns True/False. values is a string
+        containing the values of the variables in a sorted order. (e.g. "1010")
         """        
         try:
             return self.truthtable()[values]
@@ -341,33 +425,37 @@ class BF:
         number of variables.
         """
 
-        # PI contains all the different levels of PIs, such that pi[i] is the 2^i
-        # level PI.
-
         if self._min_sop:
             # Retrieving from cache
             rv = self._min_sop
 
         
         else:
-            # 2 Extreme cases
+            # 2 Extreme cases for faster computations
             if len(self.minterms()) == 0: 
                 # There are no minterms
                 rv = '0'
             
             elif len(self.maxterms()) == 0:
-            # All values are true, i.e., all combinations are minterms
+                # All the values in truthtable are minterms
                 rv = "1"
 
             # General case
             else:
-                pis_num = self.mintermsl() # Prime implicants, PIs = numerical minterms
+                # STAGE 1 OF Q-M ALGORITHM
 
-                # Converting the minterms to a format appropriate for PIs
-                pis = {}
+                # First level PIs are the minterms themselves
+                pis_num = self.mintermsl()
 
+                # Register storing all the combinations. Used for tracing back
+                # the minterms covered
                 comb_register = {}
 
+                # Converting the minterms (PIs) from numerical to string format
+                # for analysing bit by bit. 
+                # Numerical versions are still needed for checking if all the 
+                # required minterms are covered later...so a new copy
+                pis = {}
                 for i in pis_num:
                     pis[i] = [] # Create empty minterm list for all categories 
                     for j in pis_num[i]:
@@ -376,17 +464,26 @@ class BF:
                         # Populating the cover sheet comb register
                         comb_register[string_minterm] = [string_minterm] 
 
-                pis = [pis] # Converting to list to accomodate for future additions
+                # pis contains all the different levels of PIs, such that pis[i] 
+                # is the 2^i level PI.
+                # Converting to list to accomodate for future additions
+                pis = [pis]
 
-                sim_pis = [] # Contains all the simplified prime implicants discovered so far
+                # Contains all the simplified prime implicants discovered so far
+                sim_pis = []
 
+                # Doing the repetitive prime impliciation simplification
                 i = 0
                 while(1):
+                    # Find the new PIs calculated, the simplified PIs found
+                    # in the current PIs, and the temporary combination register
+                    # developed during this simplification
                     sim_pi_found, pis_calc, temp_register = next_pis(pis[i])
 
-                    # Because simplified PIs for current PIs are generated
+                    # These are the required simplified PIs
                     sim_pis += sim_pi_found
 
+                    # Finding out the minterms involved in the merge
                     for merge in temp_register:
                         # For all the merged results
 
@@ -400,9 +497,6 @@ class BF:
                                 temp_register[merge] += grandparents
                                 temp_register[merge].remove(parent)
 
-                                # Pop off the parent to remove duplicacy
-                                #comb_register.pop(parent) 
-
                     # Record the combination results
                     comb_register.update(temp_register)
 
@@ -412,12 +506,14 @@ class BF:
                         pis.append(pis_calc)
                         i += 1
 
+                # STAGE 2 OF Q-M ALGORITHM
+
                 # Converting the string minterms to numeric minterms
                 for i in comb_register:
                     for j in range(len(comb_register[i])):
                         comb_register[i][j] = int(comb_register[i][j], 2)
 
-                # Generating EPIs from simplified PIs
+                # Generating EPIs from simplified PIs == PI chart
                 epis = gen_epi(self.minterms(), sim_pis, comb_register)
                 
                 # Generating Output
@@ -434,21 +530,19 @@ class BF:
     def min_pos(self):
         """
         Finds and returns the most simplified POS form of the boolean function.
-
-        Finds sop first, and then converts to pos (as Quine-McCluskey_algorithm
-        works for sop)
         """
+
+        # This should be able to be implemented by finding adapting the Q-M
+        # algorithm for POS. Couldn't implement due to lack of time
         print("Still under development. Try min_sop instead")
         
 def next_pis(current_pi):
     """
     Finds the next generation prime implicants from the current ones.
 
-    current_pi is a dictionary mapping [num_ones, num_dashes] to a list
-    of all the implicants in that category.
-    If the PIs passed in are minterms, they are level 1 PIs. Function 
-    will automatically convert them to the appropriate PI format.
-
+    current_pi is a dictionary mapping num_ones to a list of all the implicants 
+    in that category.
+    
     Test borrowed from Wikipedia's Quine-McCluskey algorithm page:
     
     >>> a = {1: ["0100", "1000"], 2: ["1001", "1010", "1100"], 3: ["1011", \
@@ -501,12 +595,7 @@ def next_pis(current_pi):
     categories = list(current_pi)
     categories.sort()
 
-    entry_flag = False # Checks if the next for loop was even started
-    # If only 1 category of PIs are sent, there is nothing to combine.
-
-    
     for i in range(len(categories)):
-        entry_flag = True
         category = categories[i]
         if i+1 < len(categories):
             # We haven't reached the last category
@@ -517,7 +606,6 @@ def next_pis(current_pi):
 
         for pi in current_pi[category]:
             # Checking for all PIs in current category
-            #is_sim = True
             
             if next_category:
                 # Only try to merge if the next category exists
@@ -526,33 +614,22 @@ def next_pis(current_pi):
 
                     combination = combine(pi, high_pi)
                     if combination:
-                        # If they differ by just 1 bit, then combination not = None
-                        # Merge them
+                        # Record the merged result
                         next_dict[category].append(combination)
-                        #is_sim = False
                         comb_register[combination] = [pi, high_pi]
-                        # Adding the high_pi into list merged_pis as it is technically
-                        # now merged. It is NOT the most simplified PI, even if no
-                        # higher (higher than high) mergable PI is found.
+                        # Adding the 2 PIs to the list of merged PIs
                         merged_pis.append(high_pi)
                         merged_pis.append(pi)
 
             if pi not in merged_pis:
-            #if is_sim and pi not in merged_pis:
-                # If PI couldn't be combined, it is a simplified PI
+                # This is the most simplified PI
                 sim_pis.append(pi)
 
-    if not entry_flag:
-        # Only 1 category in current_pi
-        i = list(current_pi.keys())[0]
-        # Thus, all these PIs are already simplified
-        sim_pis += current_pi[i]
-
-    # At this point, there will be duplicates of newly created PIs as different
-    # combinations can lead to the same mere.
+    # The same resulting PI can be generated by multiple combinations. So there
+    # will be duplicates. # of duplicates is alays 2^i for some i
 
     for i in next_dict:
-        next_dict[i] = list(set(next_dict[i]))
+        next_dict[i] = list(set(next_dict[i])) # Removes the duplicates
         
     return sim_pis, next_dict, comb_register
 
@@ -614,7 +691,7 @@ def gen_epi(minterms, sim_pis, comb_register):
 
     if sim_pis and comb_register == {}:
         # Extreme case where no merges happened, but there are PIs in sim_pis
-        # This sim_pis are the EPI
+        # These sim_pis are the EPIs
         EPI = sim_pis        
 
     else:
@@ -627,35 +704,42 @@ def gen_epi(minterms, sim_pis, comb_register):
         for pi in sim_pis:
             # Loop over all the simplified PIs
             for minterm in comb_register[pi]:
-                # Run over all the minterms that were combined to get this PI
+                # Loop over all the minterms that were combined to get this PI
                 pi_tally[minterm].append(pi)
                 # Add this PI to that minterm's PI-tally
 
         for minterm in pi_tally:
+            # Now analysing all the minterms for their coverage by PIs
             if len(pi_tally[minterm]) == 1:
                 # This minterm can be formed only by 1 PI
-                # This PI is EPI
+                # This PI is an EPI
                 EPI.append(pi_tally[minterm][0])
 
                 # Pulling out all the minterms that can be covered by this EPI
-                # Putting them in the list of minterms covered
+                # Putting them in the list of minterms covered as well
                 minterms_covered += comb_register[pi_tally[minterm][0]]
 
         # Work left
         minterms_left = [i for i in minterms if i not in minterms_covered]
 
         while minterms_left:
+            # Choosing EPIs based on the number of minterms they cover.
+            # This should produce the accurate results in most cases, and it 
+            # tries to simulate the trial and error technique used in reality.
+            # Nevertheless, a more thorough testing is needed.
+
+            # Petrick's Method can be implemented in an improved version
+            # http://en.wikipedia.org/wiki/Petrick%27s_method
             minterm = minterms_left.pop()
             possible_choices = pi_tally[minterm]
             choice = max(possible_choices, key = lambda x: len(comb_register[x]))
 
             EPI.append(choice)
-            # The choice PI will have some other minterms that it covers, which might
-            # be there in the list of minterms_left. Pop them off
+            # The choice PI will have some other minterms that it covers, which 
+            # might be there in the list of minterms_left. Pop them off
 
             for i in comb_register[choice]:
                 if i in minterms_left: minterms_left.remove(i)
-
 
     return EPI
 
@@ -664,10 +748,10 @@ def form_function(epis, vars):
     Given a list of epis and the desired vars (same order), returns a 
     string that can be used for forming a BF.
     
-    This function assumes that epis actually contain epis! It does not do any
-    simplification. Can produce unexpected results if called that way.
+    This function assumes that epis actually contain epis! Can produce 
+    unexpected results if called in any other case.
 
-    This will also simiplify using the identity:
+    This will also simplify using the identity:
     a + a = a
 
     The similar simiplification using a*a = a is not done! Other parts of who 
@@ -680,7 +764,8 @@ def form_function(epis, vars):
     '1'
     """
 
-    # This removes repetitive EPIs which might have lingered on.
+    # This removes repetitive EPIs which might have lingered on. Applies the
+    # "a + a = a" identity
     epis = list(set(epis))
 
     epis.sort(key = find_ones_pi)
@@ -699,7 +784,7 @@ def form_function(epis, vars):
                         term += "~" + vars[i]
 
                 elif epi[i] == "1":
-                    # Term needs a negated form of this variable
+                    # Term needs a non-negated form of this variable
                     if term != "":
                         term += "*" + vars[i]
                     else:
@@ -713,7 +798,7 @@ def form_function(epis, vars):
             rv += term
 
     if rv == "":
-        # All the variables have a "-". It is the always true function
+        # All the variables have a "-". It is the identity 1
         return "1"
     else:
         return rv
@@ -782,7 +867,7 @@ def find_ones_pi(pi):
     return rv
 
 
-# Copying the nethods as functions to make DigiCAD user friendly
+# Copying the methods as functions to make the module more user friendly
 def bf_not(bf):
     """
     Returns a not version of the boolean function passed in.
@@ -826,4 +911,4 @@ def xor(bf1, bf2):
     Does the boolean XOR operation and returns the resulting function (without 
     simplifying)
     """
-    return bf1%bf2    
+    return bf1%bf2
