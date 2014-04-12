@@ -3,7 +3,7 @@ requires some details.
 General syntax: All the commands use the same format: 
 <command name> <argument1> <argument2>....
 
-Developed by: Udey Rishi & Raghav Vamaraju, 2014
+Developed by: Udey Rishi, 2014
 If some functions don't have the syntax specified, use the above one.
 --------------
 Please refrain yourself from using any brackets while passing arguments; 

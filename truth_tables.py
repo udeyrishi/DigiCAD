@@ -2,7 +2,7 @@
 The truth-table module. Helps generate a truthtable needed by by boolfunc. 
 Does this by using the string parsing functions in strings.py.
 
-Developed by: Udey Rishi & Raghav Vamaraju, 2014
+Developed by: Raghav Vamaraju, 2014
 """
 
 from strings import *

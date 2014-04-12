@@ -6,7 +6,7 @@ Please note that some of the test cases in this module may fail. The exact test
 result depends on how Python interpreter decides to store dictionaries. In case
 test(s) fails, check the 'expected' vs. 'got' values to verify manually.
 
-Developed by: Udey Rishi & Raghav Vamaraju, 2014
+Developed by: Udey Rishi, 2014
 """
 
 from truth_tables import *

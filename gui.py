@@ -32,7 +32,7 @@ Examples (these can be typed directly into the input boxes):
 Source for the GUI outline:
 http://www.tkdocs.com/tutorial/firstexample.html
 
-Developed by: Udey Rishi & Raghav Vamaraju, 2014
+Developed by: Raghav Vamaraju, 2014
 """
 
 # Import modules from Tkinter and the Boolean Function module.
