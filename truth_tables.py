@@ -79,11 +79,3 @@ def make_table(expression):
         truth_table[binary_num] = bool(eval(f_temp))
         
     return vars, truth_table, f_clean
-        
-        
-        
-        
-        
-        
-        
-    

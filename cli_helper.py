@@ -200,7 +200,7 @@ def create_BF(function):
                     # Over-ride the user provided name.
                     test = None
                     break
-
+    
         func = BF(function) # Creating the boolean function
         if test: func._name = test
         func_name = func.name() # Pulling out the user desired name
@@ -235,10 +235,10 @@ def create_BF(function):
         func._name = func_name # Changing the name of the BF
         _workspace[func_name] = func # Adding to workspace
         printc(func, blue) # Displaying the output as a confirmation
-
+    
     except:
         printc("Please check the syntax.", fail)
-
+    
 def rename(arguments):
     """
     Renames a function in the workspace.
