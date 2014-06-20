@@ -534,7 +534,15 @@ def remove(s, i):
     
     return s[:i] + s[i+1:]
     
-    
+def myindexreturner(string, character):
+    """
+    Returns a list containing the indices of "character" in "String"
+    """
+    rv = []
+    for i in range(len(string)): 
+        if string[i] == character: rv.append(i)
+    return rv
+  
     
 def proper(function, name = "f"):
     """
@@ -571,61 +579,57 @@ def proper(function, name = "f"):
     >>> proper('f  a,b,c)=a+b+c')
     'fabc(a, b, c) = a+b+c'
     """
-    variables = set() # All the variables found in the expression
-    trash = list() # Everything else that is found in the expression
+        # Separating expression from everything else
+    if "=" in function:
+        expression = function[function.index("=") + 1:].strip()
+        everything_else = function[:function.index("=")].strip()
 
-    # Just for backing up the order. There is a possibility that the given
-    # function was partially proper.
-    possible_name = "" 
-
-
-    index = 0
-    flag = 0 # Flag for the case where just function name was given without vars
-
-    for c in function:
-        if c == "=":
-            if ")" in trash and "(" in trash:
-                # Proper notation was passed in. Ignore the variables set and return
-                # the function itself
-                return function 
-            else:
-                # Function name was given without listing variables
-                # Partially proper syntax. Set the flag
-                flag = 1
-                break
-        else: 
-            if 97 <= ord(c) <= 122 or 65 <= ord(c) <= 90:
-                # c is an english letter, so a variable, or part of name (partially proper case)
-                variables.add(c)
-                possible_name += c
-
-            else:
-                trash.append(c)
-        index += 1
-
-    if flag == 1:
-        # Chop off the function name, and pass it separately in a recursive call
-        if function[index+1] == ' ':
-            # If spacing was used after "="
-            return proper(function[index+2:], possible_name)
-        else:
-            # If spacing wasn't used after "="
-            return proper(function[index+1:], possible_name)
-    
     else:
-        # Sort the variables alphabetically
+        expression = function.strip()
+        everything_else = ""
 
-        variables = list(variables)
-        variables.sort()
+    # Parsing everything_else
+    variables = set()
+    if everything_else == "":
+        function_name = name
 
-        var_string = ""
-        for i in variables:
-            var_string += i + ", "
-        var_string = var_string[:-2]         
+    elif "(" in everything_else and ")" in everything_else:
+        function_name = everything_else[:everything_else.index("(")].strip()
+        possible_variables = everything_else[everything_else.index("(") + 1:\
+                                             everything_else.index(")")].strip()
+        possible_variables = possible_variables.split(",")
+        variables = {i.strip() for i in possible_variables}
 
-        return ("%s(%s) = %s" %(name, var_string, function))
+    else:
+        function_name = everything_else.replace("(", "")
+        function_name = function_name.replace(")", "")
+        function_name = function_name.replace(",", "")
+        function_name = function_name.replace(" ", "")
 
-        
+    # Parsing out variables from expression
+    symbols = ['*', '^', '%', '+', '-', 'v', "'", '~', "|"]
+    symbol_indices = []
+    for symbol in symbols:
+        if symbol in expression:
+            indices = myindexreturner(expression, symbol)
+            for i in indices:
+                symbol_indices.append(i)
+    symbol_indices.sort()
+    
+    start = 0
+    for index in symbol_indices:
+        variables = variables.union({expression[start:index].strip()})
+        start = index+1
+
+    variables = variables.union({expression[start:].strip()})
+
+    # Forming the function
+    variables = list(variables)
+    variables.sort()
+    rv = "%s%s = %s" %(function_name, tuple(variables), expression)
+    rv = rv.replace("'", "")
+    return rv
+
         
 def find_name(function):
     """
@@ -644,5 +648,3 @@ def find_name(function):
             rv += c
         else:
             return rv
-    
-    
