@@ -206,7 +206,6 @@ def create_BF(function):
 
         func_name = func.name() # Pulling out the user desired name
 
-        # Udey
         func_vars = func.variables()
         func_exp = func.expression()
         vars_used = []
@@ -223,9 +222,13 @@ def create_BF(function):
         func_vars = list(func_vars)
         func_vars.sort()
         func_vars = tuple(set(func_vars))
-        function = "%s%s = %s" %(func_name, func_vars, func_exp)
+        
+        # Ternary operator prevents comma in a single valued tuple issue
+        function = "%s%s = %s" %(func_name, func_vars if (len(func_vars) > 1) \
+                   else ("(%s)" %func_vars[0]), func_exp)
         function = function.replace("'", "")
         func = BF(function)
+        func_name = func.name()
 
         if not test:
             # User did not give a name. So func_name is the self
