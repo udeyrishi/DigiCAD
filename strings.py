@@ -618,10 +618,12 @@ def proper(function, name = "f"):
     
     start = 0
     for index in symbol_indices:
-        variables = variables.union({expression[start:index].strip()})
+        variable = expression[start:index].strip().replace("(", "").replace(")", "")
+        variables = variables.union({variable})
         start = index+1
 
-    variables = variables.union({expression[start:].strip()})
+    variable = expression[start:].strip().replace("(", "").replace(")", "")
+    variables = variables.union({variable})
 
     # Forming the function
     variables = list(variables)
@@ -648,3 +650,6 @@ def find_name(function):
             rv += c
         else:
             return rv
+
+
+a = proper("foo(b,a) = (a+b) + (a*b)")
