@@ -203,7 +203,29 @@ def create_BF(function):
     
         func = BF(function) # Creating the boolean function
         if test: func._name = test
+
         func_name = func.name() # Pulling out the user desired name
+
+        # Udey
+        func_vars = func.variables()
+        func_exp = func.expression()
+        vars_used = []
+        for var in func_vars:
+            if var in _workspace: 
+                vars_used.append(var)
+
+
+        for var in vars_used:
+            func_vars.remove(var)
+            func_vars += _workspace[var].variables()
+            func_exp = func_exp.replace(var, "(%s)" %_workspace[var].expression())
+
+        func_vars = list(func_vars)
+        func_vars.sort()
+        func_vars = tuple(set(func_vars))
+        function = "%s%s = %s" %(func_name, func_vars, func_exp)
+        function = function.replace("'", "")
+        func = BF(function)
 
         if not test:
             # User did not give a name. So func_name is the self
