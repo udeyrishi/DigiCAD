@@ -39,6 +39,9 @@ endc = bcolors.ENDC
 
 # Stores all the created boolean functions mapped to their function name.
 _workspace = {}
+# _varspace is just like _workspace, excpet it stores variables used by other BFs
+# as BFs
+_varspace = {}
 
 # Internal functions
 def printc(text, colour = output, term = "\n"):
@@ -84,30 +87,41 @@ def operator(args):
     Called when there is a possibility that args might be a combination
     of operators acting on BFs. Tries to simplifify it. 
     """
-    check = False # Check if the operator is "=="
-    for i in range(len(args)):
-        if args[i] == "=" :
-            if i != 0 and args[i-1] == "=":
+    try:
+        check = False # Check if the operator is "=="
+        for i in range(len(args)):
+            if args[i] == "=" :
+                if args[i+1] == "=":
                     check = True 
                     j = i # The index of the "==" operator
+                    break
 
-    if check: equal(args, j) # equality operator, a special case, is called
-    else:
-        commands = args.split()
+                else:
+                    # Reassignment '=' operator
+                    create_BF(args)
+                    return 
 
-        for i in range(len(commands)):
-            if commands[i] in _workspace:
-                # This is a BF
-                exp = "(" + _workspace[commands[i]].expression() + ")"
-                # Repacing the name with the actual expression
-                commands[i] = exp
 
-        new_exp = ""
-        for i in commands:
-            # Form the new BF
-            new_exp += i + " "
+        if check: equal(args, j) # equality operator, a special case, is called
+        else:
+            commands = args.split()
 
-        create_BF(new_exp)
+            for i in range(len(commands)):
+                if commands[i] in _workspace:
+                    # This is a BF
+                    exp = "(" + _workspace[commands[i]].expression() + ")"
+                    # Repacing the name with the actual expression
+                    commands[i] = exp
+
+            new_exp = ""
+            for i in commands:
+                # Form the new BF
+                new_exp += i + " "
+
+            create_BF(new_exp)
+
+    except:
+        printc("Please check the syntax.", fail)
 
 # DigiCAD functions:
 
@@ -161,7 +175,7 @@ def help_dc(args = None):
 
 def workspace():
     """
-    Displays all the variables defined in the current workspace.
+    Displays all the functions defined in the current workspace.
     """
     if _workspace == {}:
         printc("Workspace is empty.", fail)
@@ -169,6 +183,18 @@ def workspace():
         j = 0
         for i in _workspace:
             printc("%s) %s" %(j, _workspace[i]))
+            j += 1
+
+def varspace():
+    """
+    Displays all the variables defined in the current varspace.
+    """
+    if _varspace == {}:
+        printc("Varspace is empty.", fail)
+    else:
+        j = 0
+        for i in _varspace:
+            printc("%s) %s" %(j, _varspace[i].expression()))
             j += 1
 
 def gui():
@@ -209,32 +235,44 @@ def create_BF(function):
         func_vars = func.variables()
         func_exp = func.expression()
         vars_used = []
+        # Keeps track of all the new variables added by this function
+        # If the user does not complete the create BF process, rollback
+        vars_added = []
+
         for var in func_vars:
             if var in _workspace: 
                 vars_used.append(var)
+
+            else:
+                # Add variable to varspace as a BF
+                if var not in _varspace:
+                    var_BF = BF(var.strip(), var.strip()) # Creating x = x style BF
+                    _varspace[var] = var_BF # Adding variable to workspace
+                    vars_added.append(var) # Adding change to change tracker
 
 
         for var in vars_used:
             func_vars.remove(var)
             func_vars += _workspace[var].variables()
-            func_exp = func_exp.replace(var, "(%s)" %_workspace[var].expression())
+            func_exp = func_exp.replace(var, "(%s)" %_workspace[var].expression()\
+                       if (len(_workspace[var].expression()) > 1) else "%s" \
+                       %_workspace[var].expression())
 
         func_vars = list(func_vars)
         func_vars.sort()
         func_vars = tuple(set(func_vars))
-        
+
         # Ternary operator prevents comma in a single valued tuple issue
         function = "%s%s = %s" %(func_name, func_vars if (len(func_vars) > 1) \
                    else ("(%s)" %func_vars[0]), func_exp)
         function = function.replace("'", "")
         func = BF(function)
-        func_name = func.name()
 
         if not test:
             # User did not give a name. So func_name is the self
             # generated name
             suffix = 0 # Added suffix to prevent collision
-            while func_name in _workspace:
+            while (func_name in _workspace) or (func_name in _varspace):
                 # function name collision
                 if suffix == 0:
                     # Just the first attempt, so add the suffix
@@ -246,6 +284,30 @@ def create_BF(function):
                     func_name = func_name[:-length] + str_suff
                 suffix += 1
 
+        while test and func_name in _varspace:
+            # User inputted name is confliting with a variable name
+
+            printc("%s is a defined variable, and is thus restricted for use as a function name."\
+                    %func_name, fail)
+            printc("Either use a different name, or delete the variable from the variable space first.", fail)
+            printc("WARNING: Deleting a variable also deletes all the functions using that variable!", fail)
+            printc("Try a different name? (Y/N) ", fail, " ")
+            decision = input()
+
+            if decision.lower() == 'y' or decision.lower() == 'yes' or decision == '':
+                func_name = input("Please enter a new name: ")
+            
+            elif decision.lower() == 'n' or decision.lower() == 'no':
+                # Rollback
+                for garbage_var in vars_added:
+                    _varspace.pop(garbage_var)
+                printc("No changes made.", blue)
+                # Do not save any new BFs made, and simply return
+                return
+
+            else:
+                printc("Could not interpret decision. Try again.", fail)
+
         while test and func_name in _workspace:
             # User inputted name is conflicting
 
@@ -254,7 +316,8 @@ def create_BF(function):
                             %func_name, fail, " ")
             decision = input()
 
-            if decision.lower() == 'y': test = False # Forcing continue
+            if decision.lower() == 'y' or decision.lower() == 'yes' or decision == '':
+                test = False # Forcing continue
             else: 
                 func_name = input("Please enter a new name: ")
         func._name = func_name # Changing the name of the BF
@@ -296,7 +359,7 @@ def del_bf(function = None):
             printc("Are you sure you want to remove %s from the current workspace? (Y/N)" \
                        %function, fail, " ")
             decision = input()
-            if decision.lower() == "y":
+            if decision.lower() == "y" or decision.lower() == 'yes' or decision == '':
                 _workspace.pop(function)
                 printc("%s successfully removed from the workspace" %function, blue)
             else:
@@ -306,11 +369,58 @@ def del_bf(function = None):
         printc("Are you sure you want to empty the current workspace? (Y/N)", \
                        fail, " ")
         decision = input()
-        if decision.lower() == "y":
+        if decision.lower() == "y" or decision.lower() == 'yes' or decision == '':
             _workspace.clear()
             printc("Workspace emptied!", blue)
         else:
-            printc("Nothing deleted", blue)        
+            printc("Nothing deleted", blue)
+
+def del_var(var = None):
+    """
+    Removes the variable from the workspace. Also removes all the BFs using the 
+    variable. If no argument is passed, empties the varpsace, and hence the 
+    workspace.
+    """
+    if var:
+        # The user gave a specific function to be deleted
+        var = var.strip()
+        if var not in _varspace:
+            # Invalid function
+            printc("%s is not a variable in the varspace" %var, fail)
+
+        else:
+            printc("Are you sure you want to remove %s from the current varspace? (Y/N)" \
+                       %var, fail, " ")
+            decision = input()
+            if decision.lower() == "y" or decision.lower() == 'yes' or decision == '':
+                _varspace.pop(var)
+
+                # Checking dependencies in workspace
+                remove_list = []
+                for function in _workspace:
+                    if var in _workspace[function].variables():
+                        remove_list.append(function)
+
+                # Remove the dependent functions
+                for function in remove_list:
+                    _workspace.pop(function)
+
+                printc("%s successfully removed from the varspace" %var, blue)
+                printc("%s successfully removed from workspace" %remove_list, blue)
+
+            else:
+                printc("Nothing deleted", blue)
+
+    else:
+        printc("Are you sure you want to empty the current varspace and workspace? (Y/N)", \
+                       fail, " ")
+        decision = input()
+        if decision.lower() == "y" or decision.lower() == 'yes' or decision == '':
+            _workspace.clear()
+            _varspace.clear()
+            printc("Varpsace and workspace emptied!", blue)
+        else:
+            printc("Nothing deleted", blue)         
 
 def expression(name):
     """
@@ -431,22 +541,26 @@ def equal(args, i = None):
     Can be used in 2 cases:
     1. Called by operator (i != None)
     Called by the operator if "==" sign is detected.
-    i and i-1 are the locations where "=" is found.
+    i and i+1 are the locations where "=" is found.
 
     2. Called by user i == None
     """
     if i:
         # Case 1
-        args1 = args[:i-1].strip()
-        args2 = args[i+1:].strip()
+        args1 = args[:i].strip()
+        args2 = args[i+2:].strip()
 
-        if args1 in _workspace and args2 in _workspace:
+        if (args1 in _workspace or args1 in _varspace) and (args2 in _workspace\
+            or args2 in _varspace):
             # Comparing and producing the result
-            printc(_workspace[args1] == _workspace[args2])
+            func1 = _workspace[args1] if args1 in _workspace else _varspace[args1]
+            func2 = _workspace[args2] if args2 in _workspace else _varspace[args2]
+            printc(func1 == func2)
 
         else:
-            failed_arg = args1 if args1 not in _workspace else args2
-            printc("%s is not a BF in the workspace" %failed_arg, fail)
+            failed_arg = args1 if (args1 not in _workspace and args1 not in 
+                         _varspace) else args2
+            printc("%s is neither a BF in the workspace or a defined variable" %failed_arg, fail)
 
     else:
         # Case 2
@@ -663,6 +777,7 @@ command_list = { # Basic DigiCAD commands
                 'flash' : initialise, 
                 'help' : help_dc,
                 'workspace' : workspace,
+                'varspace' : varspace,
                 'gui' : gui,
                 # Basic BF tools
                 'def' : create_BF, 
@@ -670,6 +785,7 @@ command_list = { # Basic DigiCAD commands
                 'expression' : expression, 
                 'display_BF' : disp,
                 'del' : del_bf,
+                'delvar': del_var,
                 # BF properties
                 'minterms' : minterms,
                 'maxterms' : maxterms, 
@@ -702,12 +818,14 @@ arg_len = {
             'flash' : [0], 
             'help' : [0, 1],
             'workspace' : [0],
+            'varspace': [0],
             'gui' : [0],
             'def' : [], # don't care 
             'rename' : [2],
             'expression' : [1], 
             'display_BF' : [1],
             'del' : [0,1],
+            'delvar' : [0, 1],
             'minterms' : [1],
             'maxterms' : [1], 
             'mintermsl' : [1],
