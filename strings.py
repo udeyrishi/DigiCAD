@@ -628,7 +628,10 @@ def proper(function, name = "f"):
     # Forming the function
     variables = list(variables)
     variables.sort()
-    rv = "%s%s = %s" %(function_name, tuple(variables), expression)
+
+    # Ternary operator prevents comma in a single valued tuple issue
+    rv = "%s%s = %s" %(function_name, tuple(variables) if (len(variables) >1) \
+         else ("(%s)" %variables[0]) , expression)
     rv = rv.replace("'", "")
     return rv
 
@@ -650,6 +653,3 @@ def find_name(function):
             rv += c
         else:
             return rv
-
-
-a = proper("foo(b,a) = (a+b) + (a*b)")
