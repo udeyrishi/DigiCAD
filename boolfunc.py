@@ -54,6 +54,8 @@ class BF:
         # Parsing out the list of variables and expression, and creating the
         # truth table (tt) from the proper function
         variables, table, expression = make_table(function)
+        if expression.strip() == '':
+            raise InvalidBooleanFunctionError("No expression given!")
 
         variables.sort()
 
@@ -66,9 +68,6 @@ class BF:
         self._variables = variables
         self._table = table
 
-        # If a single variable is given, e.g. BF('x = x'), turn it to 'f = x'
-        if self._expression.strip() == self._name.strip():
-            self._name = name
         # Storing minterms hashed with the number of 1s, and maxterms hashed 
         # with the number of 0s
         # This is done as minterms and maxterms are needed in a majority of
@@ -917,6 +916,3 @@ def xor(bf1, bf2):
     simplifying)
     """
     return bf1%bf2
-
-
-a = BF("x")
