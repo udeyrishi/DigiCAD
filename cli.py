@@ -1,13 +1,13 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3
 
 """
 The main script running the CLI of the Digial Logic simplification tool: DigiCAD.
-Needs python 3.4 to operate. Compatible mostly with any python 3.x, except for 
-some quickly fixable syntactical issues (result of non-backwards syntax 
+Needs python 3.4 to operate. Compatible mostly with any python 3.x, except for
+some quickly fixable syntactical issues (result of non-backwards syntax
 compatibility in successive python 3.x).
 
-Tested for UNIX/Linux. Should work for most part on other OSes as well (except 
-commands requiring bash). 
+Tested for UNIX/Linux. Should work for most part on other OSes as well (except
+commands requiring bash).
 
 For help regarding the usage, see cli_help.txt, or launch command "help" from
 the tool.
@@ -22,8 +22,8 @@ import cli_helper
 
 # Defining the colours
 green = cli_helper.bcolors.OKGREEN
-head = cli_helper.bcolors.HEADER 
-blue = cli_helper.bcolors.OKBLUE 
+head = cli_helper.bcolors.HEADER
+blue = cli_helper.bcolors.OKBLUE
 output = cli_helper.bcolors.WARNING
 fail = cli_helper.bcolors.FAIL
 endc = cli_helper.bcolors.ENDC
@@ -51,8 +51,8 @@ while(1):
 
     elif command in cli_helper._workspace and len(user_ip) == 1:
         # User called a BF
-        cli_helper.execute('display_BF', command) # Only the first argument will be taken 
-    
+        cli_helper.execute('display_BF', command) # Only the first argument will be taken
+
     elif command in cli_helper._workspace and len(user_ip) > 1:
         # Possibility that some operator is acting on multiple BFs
         cli_helper.operator(user_ip_read)
